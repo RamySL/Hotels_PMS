@@ -1,0 +1,6 @@
+# Chargé uniquement par les tests : Boot lit classpath:/config/ après classpath:/, ces
+# valeurs surchargent donc celles de src/main/resources/application.yml.
+pms:
+  jwt:
+    # base64 de "cle-de-test-pms-hotel-a-ne-jamais-utiliser-hors-tests"
+    secret: Y2xlLWRlLXRlc3QtcG1zLWhvdGVsLWEtbmUtamFtYWlzLXV0aWxpc2VyLWhvcnMtdGVzdHM=

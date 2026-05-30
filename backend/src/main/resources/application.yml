@@ -17,3 +17,10 @@ spring:
 
 server:
   port: 8080
+
+pms:
+  jwt:
+    # Pas de valeur par défaut : sans JWT_SECRET, l'application refuse de démarrer
+    secret: ${JWT_SECRET}
+    # Durée d'une vacation, sans refresh token (ADR-002)
+    expiration: 8h
