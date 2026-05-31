@@ -42,6 +42,7 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(requests -> requests
+				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/ping").permitAll()
 				// Sans cela, une erreur 500 transmise à /error serait transformée en 401
 				.requestMatchers("/error").permitAll()

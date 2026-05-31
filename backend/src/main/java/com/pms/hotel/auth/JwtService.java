@@ -1,5 +1,6 @@
 package com.pms.hotel.auth;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -43,6 +44,10 @@ public class JwtService {
 			.build();
 		JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
 		return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+	}
+
+	public Duration expiration() {
+		return properties.expiration();
 	}
 
 }

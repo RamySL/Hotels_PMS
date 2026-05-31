@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +19,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+	/**
+	 * Échec du login. Même réponse pour un mot de passe faux, un email inconnu ou un compte
+	 * désactivé : l'API ne révèle pas quels comptes existent.
+	 */
+	@ExceptionHandler({ BadCredentialsException.class, AccountStatusException.class })
+	ResponseEntity<ProblemDetail> handleLoginFailure(AuthenticationException exception) {
+		return unauthorized("Bearer", "Email ou mot de passe incorrect");
+	}
 
 	/** Jeton présent mais refusé : signature, expiration, émetteur ou format. */
 	@ExceptionHandler(OAuth2AuthenticationException.class)
