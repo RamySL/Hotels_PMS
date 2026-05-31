@@ -96,6 +96,16 @@ class AuthControllerIntegrationTest {
 		assertThat(login("Claire.MARTIN@PMS.local", PASSWORD)).hasStatusOk();
 	}
 
+	/** Protège contre un hash erroné dans la migration V2 (mots de passe documentés). */
+	@ParameterizedTest
+	@CsvSource({ "admin@pms.local, Admin123!, ADMIN", "reception@pms.local, Reception123!, RECEPTIONIST" })
+	void demoAccountsLogInWithTheirDocumentedPassword(String email, String password, Role role) {
+		assertThat(login(email, password)).hasStatusOk()
+			.bodyJson()
+			.extractingPath("$.user.role")
+			.isEqualTo(role.name());
+	}
+
 	// La 3e colonne ne sert qu'à nommer le cas dans les rapports de test
 	@ParameterizedTest(name = "{2}")
 	@CsvSource({
