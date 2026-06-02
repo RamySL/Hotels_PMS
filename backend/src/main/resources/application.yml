@@ -14,6 +14,10 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  web:
+    # API mono-langue (i18n hors MVP) : messages de validation en français quel que soit le client
+    locale: fr
+    locale-resolver: fixed
 
 server:
   port: 8080
