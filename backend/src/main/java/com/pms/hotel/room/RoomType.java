@@ -30,7 +30,19 @@ public class RoomType {
 	}
 
 	public RoomType(String name, String description, BigDecimal basePrice, int capacity) {
-		this.name = name.trim();
+		update(name, description, basePrice, capacity);
+	}
+
+	/**
+	 * Nom sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc comparé
+	 * pour vérifier l'unicité.
+	 */
+	public static String normalizeName(String name) {
+		return name.trim();
+	}
+
+	public void update(String name, String description, BigDecimal basePrice, int capacity) {
+		this.name = normalizeName(name);
 		this.description = description;
 		this.basePrice = basePrice;
 		this.capacity = capacity;
