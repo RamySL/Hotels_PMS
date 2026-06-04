@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,27 @@ class RoomRepositoryTest {
 		assertThatExceptionOfType(DataIntegrityViolationException.class)
 			.isThrownBy(() -> roomRepository.saveAndFlush(new Room(twin, "102", 1)))
 			.withMessageContaining("uk_rooms_room_number");
+	}
+
+	@Test
+	void listsRoomsByFloorThenNumber() {
+		RoomType suite = roomType("Suite");
+		roomRepository.saveAll(List.of(new Room(suite, "201", 2), new Room(suite, "102", 1), new Room(suite, "101", 1)));
+
+		assertThat(roomRepository.findAllByOrderByFloorAscRoomNumberAsc()).extracting(Room::getRoomNumber)
+			.containsExactly("101", "102", "201");
+	}
+
+	@Test
+	void filtersRoomsByStatus() {
+		RoomType suite = roomType("Suite");
+		Room toClean = new Room(suite, "101", 1);
+		toClean.changeStatus(RoomStatus.CLEANING);
+		roomRepository.saveAll(List.of(toClean, new Room(suite, "102", 1)));
+
+		assertThat(roomRepository.findByStatusOrderByFloorAscRoomNumberAsc(RoomStatus.CLEANING))
+			.extracting(Room::getRoomNumber)
+			.containsExactly("101");
 	}
 
 	private RoomType roomType(String name) {

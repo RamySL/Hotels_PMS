@@ -2,6 +2,8 @@ package com.pms.hotel.room;
 
 import java.util.UUID;
 
+import com.pms.hotel.common.BusinessRuleException;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,10 +39,37 @@ public class Room {
 	}
 
 	public Room(RoomType roomType, String roomNumber, int floor) {
-		this.roomType = roomType;
-		this.roomNumber = roomNumber.trim();
-		this.floor = floor;
+		update(roomType, roomNumber, floor);
 		this.status = RoomStatus.READY;
+	}
+
+	/**
+	 * Numéro sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc comparé
+	 * pour vérifier l'unicité.
+	 */
+	public static String normalizeRoomNumber(String roomNumber) {
+		return roomNumber.trim();
+	}
+
+	public void update(RoomType roomType, String roomNumber, int floor) {
+		this.roomType = roomType;
+		this.roomNumber = normalizeRoomNumber(roomNumber);
+		this.floor = floor;
+	}
+
+	/**
+	 * Changement manuel de statut par le personnel (ménage fait, travaux…). OCCUPIED n'est
+	 * posé et levé que par le check-in et le check-out.
+	 */
+	public void changeStatus(RoomStatus newStatus) {
+		if (newStatus == RoomStatus.OCCUPIED) {
+			throw new BusinessRuleException("Le statut OCCUPIED est posé par le check-in, pas manuellement");
+		}
+		if (status == RoomStatus.OCCUPIED) {
+			throw new BusinessRuleException(
+					"La chambre " + roomNumber + " est occupée : son statut changera au check-out");
+		}
+		this.status = newStatus;
 	}
 
 	public UUID getId() {
