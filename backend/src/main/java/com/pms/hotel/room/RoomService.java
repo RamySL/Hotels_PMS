@@ -21,6 +21,7 @@ public class RoomService {
 		this.roomTypeRepository = roomTypeRepository;
 	}
 
+	@Transactional(readOnly = true)
 	public List<RoomResponse> findAll(RoomStatus status) {
 		List<Room> rooms = status == null ? roomRepository.findAllByOrderByFloorAscRoomNumberAsc()
 				: roomRepository.findByStatusOrderByFloorAscRoomNumberAsc(status);
