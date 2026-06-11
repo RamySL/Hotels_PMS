@@ -14,6 +14,11 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  data:
+    web:
+      pageable:
+        # Taille de page demandée plafonnée (2000 par défaut)
+        max-page-size: 100
   web:
     # API mono-langue (i18n hors MVP) : messages de validation en français quel que soit le client
     locale: fr
