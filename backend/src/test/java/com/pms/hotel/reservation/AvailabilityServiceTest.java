@@ -85,6 +85,20 @@ class AvailabilityServiceTest {
 			.withMessage("La chambre 101 est déjà réservée sur cette période");
 	}
 
+	// Bornes : un départ et une arrivée le même jour ne partagent aucune nuit
+	@ParameterizedTest(name = "{2}")
+	@CsvSource({ "6, 10, part le jour où le séjour commence", "14, 16, arrive le jour où le séjour finit" })
+	void periodAdjacentToTheStayIsFree(int from, int to, String scenario) {
+		assertThatCode(() -> availabilityService.ensureBookable(room101, day(from), day(to), null))
+			.doesNotThrowAnyException();
+	}
+
+	@Test
+	void roomIsAvailableFromThePreviousGuestDepartureDay() {
+		assertThat(availabilityService.findAvailableRooms(day(14), day(16))).extracting(Room::getRoomNumber)
+			.containsExactly("101", "102");
+	}
+
 	@ParameterizedTest
 	@CsvSource({ "CANCELLED", "CHECKED_OUT" })
 	void cancelledOrFinishedReservationNoLongerHoldsTheRoom(String status) {
