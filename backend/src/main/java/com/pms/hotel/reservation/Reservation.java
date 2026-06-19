@@ -83,6 +83,35 @@ public class Reservation {
 		return ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 	}
 
+	/**
+	 * Refuse une modification interdite par le statut : tout peut changer avant le check-in ;
+	 * pendant le séjour, seule la date de départ ; plus rien ensuite.
+	 */
+	public void checkCanBeRescheduled(Room room, LocalDate checkInDate, int numberOfGuests) {
+		switch (status) {
+			case CONFIRMED -> {
+			}
+			case CHECKED_IN -> {
+				if (!isSameRoom(room) || !checkInDate.equals(this.checkInDate)
+						|| numberOfGuests != this.numberOfGuests) {
+					throw new BusinessRuleException("Pendant le séjour, seule la date de départ peut être modifiée");
+				}
+			}
+			case CHECKED_OUT, CANCELLED ->
+				throw new BusinessRuleException("Une réservation terminée ou annulée n'est plus modifiable");
+		}
+	}
+
+	/** Modifie le séjour (voir checkCanBeRescheduled) et recalcule le prix. */
+	public void reschedule(Room room, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests) {
+		checkCanBeRescheduled(room, checkInDate, numberOfGuests);
+		schedule(room, checkInDate, checkOutDate, numberOfGuests);
+	}
+
+	private boolean isSameRoom(Room other) {
+		return other == room || (other.getId() != null && other.getId().equals(room.getId()));
+	}
+
 	private void schedule(Room room, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests) {
 		RoomType roomType = room.getRoomType();
 		if (numberOfGuests > roomType.getCapacity()) {

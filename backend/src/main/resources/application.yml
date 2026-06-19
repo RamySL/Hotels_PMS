@@ -23,6 +23,10 @@ spring:
     # API mono-langue (i18n hors MVP) : messages de validation en français quel que soit le client
     locale: fr
     locale-resolver: fixed
+  mvc:
+    format:
+      # Dates des paramètres d'URL en ISO (2026-10-10), indépendamment de la locale
+      date: iso
 
 server:
   port: 8080
@@ -33,3 +37,5 @@ pms:
     secret: ${JWT_SECRET}
     # Durée d'une vacation, sans refresh token (ADR-002)
     expiration: 8h
+  # « Aujourd'hui » est la date de l'hôtel, pas celle du serveur (souvent en UTC)
+  time-zone: Europe/Paris

@@ -38,6 +38,17 @@ class ReservationTest {
 	}
 
 	@Test
+	void rescheduledReservationIsRepriced() {
+		Reservation reservation = new Reservation(client, room101, ARRIVAL, ARRIVAL.plusDays(3), 2, receptionist,
+				Instant.EPOCH);
+
+		reservation.reschedule(room101, ARRIVAL, ARRIVAL.plusDays(5), 1);
+
+		assertThat(reservation.getTotalPrice()).isEqualByComparingTo("449.50");
+		assertThat(reservation.getNumberOfGuests()).isEqualTo(1);
+	}
+
+	@Test
 	void guestsCannotExceedTheRoomTypeCapacity() {
 		assertThatExceptionOfType(BusinessRuleException.class)
 			.isThrownBy(() -> new Reservation(client, room101, ARRIVAL, ARRIVAL.plusDays(1), 3, receptionist,

@@ -23,11 +23,18 @@ final class ReservationSpecifications {
 	/**
 	 * Réservations dont le séjour chevauche la période [checkIn, checkOut). Les comparaisons
 	 * sont strictes : un départ et une arrivée le même jour ne partagent aucune nuit, comme
-	 * dans la contrainte ex_reservations_no_overlap.
+	 * dans la contrainte ex_reservations_no_overlap. Une borne nulle ne restreint rien (filtres
+	 * facultatifs de la liste).
 	 */
 	static Specification<Reservation> overlapping(LocalDate checkIn, LocalDate checkOut) {
-		return (root, query, cb) -> cb.and(cb.lessThan(root.get("checkInDate"), checkOut),
-				cb.greaterThan(root.get("checkOutDate"), checkIn));
+		return (root, query, cb) -> cb.and(
+				checkOut == null ? cb.conjunction() : cb.lessThan(root.get("checkInDate"), checkOut),
+				checkIn == null ? cb.conjunction() : cb.greaterThan(root.get("checkOutDate"), checkIn));
+	}
+
+	/** Filtre facultatif : sans effet si status est null. */
+	static Specification<Reservation> withStatus(ReservationStatus status) {
+		return (root, query, cb) -> status == null ? cb.conjunction() : cb.equal(root.get("status"), status);
 	}
 
 	/** Écarte la réservation en cours de modification ; sans effet si id est null (création). */
