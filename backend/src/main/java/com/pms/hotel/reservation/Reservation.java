@@ -79,7 +79,7 @@ public class Reservation {
 		return nightsBetween(checkInDate, checkOutDate);
 	}
 
-	private static long nightsBetween(LocalDate checkInDate, LocalDate checkOutDate) {
+	static long nightsBetween(LocalDate checkInDate, LocalDate checkOutDate) {
 		return ChronoUnit.DAYS.between(checkInDate, checkOutDate);
 	}
 

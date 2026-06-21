@@ -52,6 +52,14 @@ public class AvailabilityService {
 		}
 	}
 
+	/** Chambres libres sur la période, avec le prix du séjour de chacune. */
+	@Transactional(readOnly = true)
+	public List<AvailableRoomResponse> findAvailableRoomsWithPrice(LocalDate checkIn, LocalDate checkOut) {
+		return findAvailableRooms(checkIn, checkOut).stream()
+			.map(room -> AvailableRoomResponse.of(room, checkIn, checkOut))
+			.toList();
+	}
+
 	/** Chambres libres sur la période, sans les chambres hors service, par étage puis numéro. */
 	@Transactional(readOnly = true)
 	public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
