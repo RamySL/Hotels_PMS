@@ -113,6 +113,18 @@ class ReservationLifecycleIntegrationTest {
 	}
 
 	@Test
+	void stayInProgressCannotBeCancelledSoTheRoomStaysTaken() throws Exception {
+		String id = idOf(book(today, today.plusDays(2)));
+		patch(id, "check-in");
+
+		assertThat(patch(id, "cancel")).hasStatus(HttpStatus.CONFLICT)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo("Un séjour commencé ou terminé ne peut pas être annulé");
+		assertThat(book(today, today.plusDays(2))).hasStatus(HttpStatus.CONFLICT);
+	}
+
+	@Test
 	void checkInRefusedWhileTheRoomIsBeingCleaned() throws Exception {
 		jdbcTemplate.update("UPDATE rooms SET status = 'CLEANING' WHERE id = ?", room101.getId());
 		String id = idOf(book(today, today.plusDays(1)));

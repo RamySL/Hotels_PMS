@@ -106,7 +106,7 @@ public class ReservationService {
 	@Transactional
 	public ReservationResponse checkIn(UUID id) {
 		Reservation reservation = findReservation(id);
-		reservation.checkIn(LocalDate.now());
+		reservation.checkIn(LocalDate.now(clock));
 		return ReservationResponse.from(reservation);
 	}
 

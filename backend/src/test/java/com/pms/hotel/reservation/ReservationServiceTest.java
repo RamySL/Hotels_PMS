@@ -177,6 +177,19 @@ class ReservationServiceTest {
 			.isThrownBy(() -> reservationService.update(RESERVATION_ID, request(TODAY, TODAY.plusDays(1), 2)));
 	}
 
+	@Test
+	void checkInUsesTheHotelDayEvenJustAfterMidnight() {
+		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée d'arrivée a commencé à l'hôtel
+		Clock justAfterMidnightInParis = Clock.fixed(Instant.parse("2030-01-14T23:30:00Z"), PARIS);
+		ReservationService service = new ReservationService(reservationRepository, clientRepository,
+				roomRepository, userRepository, availabilityService, justAfterMidnightInParis);
+		Reservation arrivingToday = new Reservation(client, room101, LocalDate.of(2030, 1, 15),
+				LocalDate.of(2030, 1, 17), 2, receptionist, Instant.EPOCH);
+		when(reservationRepository.findById(RESERVATION_ID)).thenReturn(Optional.of(arrivingToday));
+
+		assertThat(service.checkIn(RESERVATION_ID).status()).isEqualTo(ReservationStatus.CHECKED_IN);
+	}
+
 	private void stubClientRoomAndUser() {
 		when(clientRepository.findById(CLIENT_ID)).thenReturn(Optional.of(client));
 		when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room101));

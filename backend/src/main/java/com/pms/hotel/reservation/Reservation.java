@@ -132,9 +132,16 @@ public class Reservation {
 		status = ReservationStatus.CHECKED_OUT;
 	}
 
+	/**
+	 * Seule une réservation confirmée, dont le séjour n'a pas commencé, peut être annulée :
+	 * annuler un séjour en cours libérerait la chambre alors que le client l'occupe.
+	 */
 	public void cancel() {
 		if (status == ReservationStatus.CANCELLED) {
 			throw new BusinessRuleException("Cette réservation est déjà annulée");
+		}
+		if (status != ReservationStatus.CONFIRMED) {
+			throw new BusinessRuleException("Un séjour commencé ou terminé ne peut pas être annulé");
 		}
 		status = ReservationStatus.CANCELLED;
 	}

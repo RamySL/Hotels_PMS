@@ -118,6 +118,25 @@ class ReservationTest {
 			.withMessage("Cette réservation est déjà annulée");
 	}
 
+	@Test
+	void stayInProgressCannotBeCancelled() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+		reservation.checkIn(ARRIVAL);
+
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(reservation::cancel)
+			.withMessage("Un séjour commencé ou terminé ne peut pas être annulé");
+	}
+
+	@Test
+	void finishedStayCannotBeCancelled() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+		reservation.checkIn(ARRIVAL);
+		reservation.checkOut();
+
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(reservation::cancel)
+			.withMessage("Un séjour commencé ou terminé ne peut pas être annulé");
+	}
+
 	private Reservation stay(LocalDate checkIn, LocalDate checkOut) {
 		return new Reservation(client, room101, checkIn, checkOut, 2, receptionist, Instant.EPOCH);
 	}
