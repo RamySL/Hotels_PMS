@@ -128,6 +128,7 @@ public class Reservation {
 		if (status != ReservationStatus.CHECKED_IN) {
 			throw new BusinessRuleException("Seul un client arrivé peut faire l'objet d'un check-out");
 		}
+		room.checkOut();
 		status = ReservationStatus.CHECKED_OUT;
 	}
 

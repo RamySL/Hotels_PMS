@@ -84,13 +84,7 @@ class ReservationLifecycleIntegrationTest {
 			.extractingPath("$.status")
 			.isEqualTo("CHECKED_IN");
 		assertThat(roomStatus()).isEqualTo("OCCUPIED");
-		assertThat(mvc.patch()
-			.uri("/api/rooms/{id}/status", room101.getId())
-			.with(receptionist())
-			.contentType(MediaType.APPLICATION_JSON)
-			.content("""
-					{"status": "READY"}
-					""")).hasStatus(HttpStatus.CONFLICT);
+		assertThat(changeRoomStatus("READY")).hasStatus(HttpStatus.CONFLICT);
 
 		assertThat(mvc.put()
 			.uri("/api/reservations/{id}", id)
@@ -105,6 +99,9 @@ class ReservationLifecycleIntegrationTest {
 			.bodyJson()
 			.extractingPath("$.status")
 			.isEqualTo("CHECKED_OUT");
+		assertThat(roomStatus()).isEqualTo("CLEANING");
+		// Le ménage fait, la réception remet la chambre en service pour le client suivant
+		assertThat(changeRoomStatus("READY")).hasStatusOk();
 	}
 
 	@Test
@@ -135,6 +132,17 @@ class ReservationLifecycleIntegrationTest {
 
 	private String roomStatus() {
 		return jdbcTemplate.queryForObject("SELECT status FROM rooms WHERE id = ?", String.class, room101.getId());
+	}
+
+	private MvcTestResult changeRoomStatus(String status) {
+		return mvc.patch()
+			.uri("/api/rooms/{id}/status", room101.getId())
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{"status": "%s"}
+					""".formatted(status))
+			.exchange();
 	}
 
 	private MvcTestResult patch(String id, String action) {

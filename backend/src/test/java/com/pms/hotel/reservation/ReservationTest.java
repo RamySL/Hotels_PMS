@@ -89,13 +89,14 @@ class ReservationTest {
 	}
 
 	@Test
-	void checkOutEndsTheStay() {
+	void checkOutEndsTheStayAndLeavesTheRoomToClean() {
 		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
 		reservation.checkIn(ARRIVAL);
 
 		reservation.checkOut();
 
 		assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CHECKED_OUT);
+		assertThat(room101.getStatus()).isEqualTo(RoomStatus.CLEANING);
 	}
 
 	@Test
