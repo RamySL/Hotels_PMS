@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+import com.pms.hotel.common.BusinessRuleException;
 import com.pms.hotel.common.ResourceNotFoundException;
 import com.pms.hotel.config.SecurityConfig;
 
@@ -87,6 +88,24 @@ class ReservationControllerTest {
 		when(reservationService.findById(id)).thenThrow(new ResourceNotFoundException("Réservation", id));
 
 		assertThat(mvc.get().uri("/api/reservations/{id}", id).with(receptionist())).hasStatus(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void receptionistChecksInTheGuest() {
+		UUID id = UUID.randomUUID();
+		when(reservationService.checkIn(id)).thenReturn(sample());
+
+		assertThat(mvc.patch().uri("/api/reservations/{id}/check-in", id).with(receptionist())).hasStatusOk();
+	}
+
+	@Test
+	void refusedTransitionIsAConflict() {
+		UUID id = UUID.randomUUID();
+		when(reservationService.checkOut(id))
+			.thenThrow(new BusinessRuleException("Seul un client arrivé peut faire l'objet d'un check-out"));
+
+		assertThat(mvc.patch().uri("/api/reservations/{id}/check-out", id).with(receptionist()))
+			.hasStatus(HttpStatus.CONFLICT);
 	}
 
 	private org.springframework.test.web.servlet.assertj.MvcTestResult post(String body) {

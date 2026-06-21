@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,6 +61,21 @@ public class ReservationController {
 	@PutMapping("/{id}")
 	public ReservationResponse update(@PathVariable UUID id, @Valid @RequestBody ReservationRequest request) {
 		return reservationService.update(id, request);
+	}
+
+	@PatchMapping("/{id}/check-in")
+	public ReservationResponse checkIn(@PathVariable UUID id) {
+		return reservationService.checkIn(id);
+	}
+
+	@PatchMapping("/{id}/check-out")
+	public ReservationResponse checkOut(@PathVariable UUID id) {
+		return reservationService.checkOut(id);
+	}
+
+	@PatchMapping("/{id}/cancel")
+	public ReservationResponse cancel(@PathVariable UUID id) {
+		return reservationService.cancel(id);
 	}
 
 }

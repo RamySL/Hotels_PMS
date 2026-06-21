@@ -108,6 +108,36 @@ public class Reservation {
 		schedule(room, checkInDate, checkOutDate, numberOfGuests);
 	}
 
+	/** Arrivée du client, pendant son séjour : la chambre doit être prête et devient occupée. */
+	public void checkIn(LocalDate today) {
+		if (status != ReservationStatus.CONFIRMED) {
+			throw new BusinessRuleException("Seule une réservation confirmée peut faire l'objet d'un check-in");
+		}
+		if (today.isBefore(checkInDate)) {
+			throw new BusinessRuleException("Le check-in n'est possible qu'à partir du " + checkInDate);
+		}
+		if (!today.isBefore(checkOutDate)) {
+			throw new BusinessRuleException("Le séjour est terminé : départ prévu le " + checkOutDate);
+		}
+		room.checkIn();
+		status = ReservationStatus.CHECKED_IN;
+	}
+
+	/** Départ du client : la chambre passe à nettoyer. */
+	public void checkOut() {
+		if (status != ReservationStatus.CHECKED_IN) {
+			throw new BusinessRuleException("Seul un client arrivé peut faire l'objet d'un check-out");
+		}
+		status = ReservationStatus.CHECKED_OUT;
+	}
+
+	public void cancel() {
+		if (status == ReservationStatus.CANCELLED) {
+			throw new BusinessRuleException("Cette réservation est déjà annulée");
+		}
+		status = ReservationStatus.CANCELLED;
+	}
+
 	private boolean isSameRoom(Room other) {
 		return other == room || (other.getId() != null && other.getId().equals(room.getId()));
 	}

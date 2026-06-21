@@ -103,6 +103,27 @@ public class ReservationService {
 		return ReservationResponse.from(reservation);
 	}
 
+	@Transactional
+	public ReservationResponse checkIn(UUID id) {
+		Reservation reservation = findReservation(id);
+		reservation.checkIn(LocalDate.now());
+		return ReservationResponse.from(reservation);
+	}
+
+	@Transactional
+	public ReservationResponse checkOut(UUID id) {
+		Reservation reservation = findReservation(id);
+		reservation.checkOut();
+		return ReservationResponse.from(reservation);
+	}
+
+	@Transactional
+	public ReservationResponse cancel(UUID id) {
+		Reservation reservation = findReservation(id);
+		reservation.cancel();
+		return ReservationResponse.from(reservation);
+	}
+
 	private void ensureNotInThePast(LocalDate date, String label) {
 		if (date.isBefore(LocalDate.now(clock))) {
 			throw new BusinessRuleException(label + " ne peut pas être dans le passé");

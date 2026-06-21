@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.pms.hotel.client.Client;
 import com.pms.hotel.common.BusinessRuleException;
 import com.pms.hotel.room.Room;
+import com.pms.hotel.room.RoomStatus;
 import com.pms.hotel.room.RoomType;
 import com.pms.hotel.user.Role;
 import com.pms.hotel.user.User;
@@ -54,6 +55,70 @@ class ReservationTest {
 			.isThrownBy(() -> new Reservation(client, room101, ARRIVAL, ARRIVAL.plusDays(1), 3, receptionist,
 					Instant.EPOCH))
 			.withMessage("La chambre 101 (Double) accueille 2 personnes au maximum");
+	}
+
+	@Test
+	void checkInOnTheArrivalDayOccupiesTheRoom() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+
+		reservation.checkIn(ARRIVAL);
+
+		assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CHECKED_IN);
+		assertThat(room101.getStatus()).isEqualTo(RoomStatus.OCCUPIED);
+	}
+
+	@Test
+	void checkInIsOnlyPossibleDuringTheStay() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+
+		assertThatExceptionOfType(BusinessRuleException.class)
+			.isThrownBy(() -> reservation.checkIn(ARRIVAL.minusDays(1)))
+			.withMessage("Le check-in n'est possible qu'à partir du 2026-10-10");
+		assertThatExceptionOfType(BusinessRuleException.class)
+			.isThrownBy(() -> reservation.checkIn(ARRIVAL.plusDays(2)))
+			.withMessage("Le séjour est terminé : départ prévu le 2026-10-12");
+	}
+
+	@Test
+	void checkInHappensOnlyOnce() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+		reservation.checkIn(ARRIVAL);
+
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(() -> reservation.checkIn(ARRIVAL))
+			.withMessage("Seule une réservation confirmée peut faire l'objet d'un check-in");
+	}
+
+	@Test
+	void checkOutEndsTheStay() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+		reservation.checkIn(ARRIVAL);
+
+		reservation.checkOut();
+
+		assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CHECKED_OUT);
+	}
+
+	@Test
+	void checkOutRequiresAnArrivedGuest() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(reservation::checkOut)
+			.withMessage("Seul un client arrivé peut faire l'objet d'un check-out");
+	}
+
+	@Test
+	void confirmedReservationCanBeCancelledOnce() {
+		Reservation reservation = stay(ARRIVAL, ARRIVAL.plusDays(2));
+
+		reservation.cancel();
+
+		assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(reservation::cancel)
+			.withMessage("Cette réservation est déjà annulée");
+	}
+
+	private Reservation stay(LocalDate checkIn, LocalDate checkOut) {
+		return new Reservation(client, room101, checkIn, checkOut, 2, receptionist, Instant.EPOCH);
 	}
 
 }

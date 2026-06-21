@@ -72,6 +72,19 @@ public class Room {
 		this.status = newStatus;
 	}
 
+	/** Arrivée d'un client : la chambre doit être prête, ménage fait. */
+	public void checkIn() {
+		if (status != RoomStatus.READY) {
+			throw new BusinessRuleException("La chambre " + roomNumber + " n'est pas prête (" + status + ")");
+		}
+		this.status = RoomStatus.OCCUPIED;
+	}
+
+	/** Départ du client : la chambre est à nettoyer. */
+	public void checkOut() {
+		this.status = RoomStatus.CLEANING;
+	}
+
 	public UUID getId() {
 		return id;
 	}

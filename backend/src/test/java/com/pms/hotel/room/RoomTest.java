@@ -37,4 +37,21 @@ class RoomTest {
 		assertThat(room.getStatus()).isEqualTo(RoomStatus.READY);
 	}
 
+	@Test
+	void checkInOccupiesAReadyRoomAndCheckOutLeavesItToClean() {
+		room.checkIn();
+		assertThat(room.getStatus()).isEqualTo(RoomStatus.OCCUPIED);
+
+		room.checkOut();
+		assertThat(room.getStatus()).isEqualTo(RoomStatus.CLEANING);
+	}
+
+	@Test
+	void checkInRequiresAReadyRoom() {
+		room.changeStatus(RoomStatus.CLEANING);
+
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(room::checkIn)
+			.withMessage("La chambre 101 n'est pas prête (CLEANING)");
+	}
+
 }
