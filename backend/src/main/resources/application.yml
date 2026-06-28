@@ -12,6 +12,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      # Associations paresseuses chargées par lots (IN) plutôt qu'une requête par élément
+      hibernate.default_batch_fetch_size: 50
   flyway:
     enabled: true
   data:

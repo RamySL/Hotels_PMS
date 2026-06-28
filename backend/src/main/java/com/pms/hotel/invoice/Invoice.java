@@ -67,6 +67,42 @@ public class Invoice {
 		this.issuedAt = issuedAt;
 	}
 
+	/** Le montant suit le prix de la réservation, et le statut est recalculé. */
+	public void updateTotal(BigDecimal amountTotal) {
+		this.amountTotal = amountTotal;
+		refreshStatus();
+	}
+
+	/** Réservation annulée : la facture n'est plus due, mais ses paiements restent visibles. */
+	public void cancel() {
+		this.status = InvoiceStatus.CANCELLED;
+	}
+
+	/**
+	 * Reste à payer : positif s'il manque de l'argent, négatif en cas de trop-perçu. Une facture
+	 * annulée n'est plus due : tout ce qui a été payé devient un trop-perçu.
+	 */
+	public BigDecimal balance() {
+		BigDecimal due = status == InvoiceStatus.CANCELLED ? BigDecimal.ZERO : amountTotal;
+		return due.subtract(amountPaid);
+	}
+
+	/** Le statut se déduit des montants ; une facture annulée le reste. */
+	private void refreshStatus() {
+		if (status == InvoiceStatus.CANCELLED) {
+			return;
+		}
+		if (amountPaid.signum() == 0) {
+			status = InvoiceStatus.UNPAID;
+		}
+		else if (amountPaid.compareTo(amountTotal) < 0) {
+			status = InvoiceStatus.PARTIALLY_PAID;
+		}
+		else {
+			status = InvoiceStatus.PAID;
+		}
+	}
+
 	public UUID getId() {
 		return id;
 	}

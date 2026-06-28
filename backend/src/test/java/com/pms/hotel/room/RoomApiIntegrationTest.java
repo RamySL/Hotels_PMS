@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.jayway.jsonpath.JsonPath;
+import com.pms.hotel.TestDatabase;
 import com.pms.hotel.TestcontainersConfiguration;
 
 /**
@@ -36,8 +37,7 @@ class RoomApiIntegrationTest {
 
 	@AfterEach
 	void deleteRooms() {
-		jdbcTemplate.update("DELETE FROM rooms");
-		jdbcTemplate.update("DELETE FROM room_types");
+		TestDatabase.deleteBusinessData(jdbcTemplate);
 	}
 
 	@Test

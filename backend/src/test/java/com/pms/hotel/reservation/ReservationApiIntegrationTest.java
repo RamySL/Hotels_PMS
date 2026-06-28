@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import com.jayway.jsonpath.JsonPath;
+import com.pms.hotel.TestDatabase;
 import com.pms.hotel.TestcontainersConfiguration;
 import com.pms.hotel.client.Client;
 import com.pms.hotel.client.ClientRepository;
@@ -76,10 +77,7 @@ class ReservationApiIntegrationTest {
 
 	@AfterEach
 	void deleteData() {
-		jdbcTemplate.update("DELETE FROM reservations");
-		jdbcTemplate.update("DELETE FROM clients");
-		jdbcTemplate.update("DELETE FROM rooms");
-		jdbcTemplate.update("DELETE FROM room_types");
+		TestDatabase.deleteBusinessData(jdbcTemplate);
 	}
 
 	@Test
