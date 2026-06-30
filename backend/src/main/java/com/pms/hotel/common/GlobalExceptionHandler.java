@@ -3,6 +3,7 @@ package com.pms.hotel.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -59,6 +60,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(BusinessRuleException.class)
 	ResponseEntity<ProblemDetail> handleBusinessRule(BusinessRuleException exception) {
 		return problem(HttpStatus.CONFLICT, exception.getMessage());
+	}
+
+	/** Verrouillage optimiste (@Version) : quelqu'un a modifié la même donnée entre-temps. */
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	ResponseEntity<ProblemDetail> handleConcurrentModification(OptimisticLockingFailureException exception) {
+		return problem(HttpStatus.CONFLICT,
+				"Ces données viennent d'être modifiées par quelqu'un d'autre : rechargez-les et réessayez");
 	}
 
 	/**

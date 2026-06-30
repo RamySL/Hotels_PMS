@@ -119,6 +119,7 @@ public class ReservationService {
 	@Transactional
 	public ReservationResponse checkOut(UUID id) {
 		Reservation reservation = findReservation(id);
+		invoiceService.ensureSettled(reservation);
 		reservation.checkOut();
 		return ReservationResponse.from(reservation);
 	}

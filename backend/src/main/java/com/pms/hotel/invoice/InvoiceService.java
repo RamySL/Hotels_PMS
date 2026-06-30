@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pms.hotel.common.ResourceNotFoundException;
 import com.pms.hotel.reservation.Reservation;
+import com.pms.hotel.user.UserRepository;
 
 @Service
 public class InvoiceService {
@@ -26,10 +27,13 @@ public class InvoiceService {
 
 	private final InvoiceRepository invoiceRepository;
 
+	private final UserRepository userRepository;
+
 	private final Clock clock;
 
-	public InvoiceService(InvoiceRepository invoiceRepository, Clock clock) {
+	public InvoiceService(InvoiceRepository invoiceRepository, UserRepository userRepository, Clock clock) {
 		this.invoiceRepository = invoiceRepository;
+		this.userRepository = userRepository;
 		this.clock = clock;
 	}
 
@@ -48,6 +52,26 @@ public class InvoiceService {
 	@Transactional
 	public void cancelFor(Reservation reservation) {
 		findByReservation(reservation).cancel();
+	}
+
+	/** Refuse (409) le check-out tant que la facture de la réservation n'est pas soldée. */
+	@Transactional(readOnly = true)
+	public void ensureSettled(Reservation reservation) {
+		findByReservation(reservation).ensureSettled();
+	}
+
+	/**
+	 * Le flush envoie le paiement en base avant de construire la réponse : il reçoit ainsi son
+	 * id, et un encaissement concurrent est détecté ici (@Version) plutôt qu'au commit.
+	 */
+	@Transactional
+	public InvoiceResponse recordPayment(UUID invoiceId, PaymentRequest request, UUID userId) {
+		Invoice invoice = invoiceRepository.findById(invoiceId)
+			.orElseThrow(() -> new ResourceNotFoundException("Facture", invoiceId));
+		invoice.recordPayment(request.amount(), request.method(), userRepository.getReferenceById(userId),
+				Instant.now(clock));
+		invoiceRepository.flush();
+		return InvoiceResponse.from(invoice);
 	}
 
 	@Transactional(readOnly = true)

@@ -126,6 +126,78 @@ class InvoiceApiIntegrationTest {
 			.isEqualTo(89.90);
 	}
 
+	@Test
+	void checkOutRequiresASettledInvoice() throws Exception {
+		String reservationId = book(today, today.plusDays(2));
+		assertThat(reservationAction(reservationId, "check-in")).hasStatusOk();
+		String invoiceId = invoiceIdOf(reservationId);
+
+		assertThat(pay(invoiceId, "50.00", "CASH")).hasStatus(HttpStatus.CREATED).bodyJson().isLenientlyEqualTo("""
+				{"status": "PARTIALLY_PAID", "amountPaid": 50.00, "balance": 129.80,
+				 "payments": [{"amount": 50.00, "method": "CASH", "recordedBy": "Lucas Bernard"}]}
+				""");
+		assertThat(reservationAction(reservationId, "check-out")).hasStatus(HttpStatus.CONFLICT)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo("La facture n'est pas soldée : il reste 129,80 € à payer");
+
+		assertThat(pay(invoiceId, "129.81", "CARD")).hasStatus(HttpStatus.CONFLICT)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo("Le paiement dépasse le reste à payer (129,80 €)");
+		assertThat(pay(invoiceId, "129.80", "CARD")).hasStatus(HttpStatus.CREATED)
+			.bodyJson()
+			.extractingPath("$.status")
+			.isEqualTo("PAID");
+		assertThat(reservationAction(reservationId, "check-out")).hasStatusOk();
+	}
+
+	@Test
+	void extensionAfterFullPaymentLeavesTheNewNightToPay() throws Exception {
+		String reservationId = book(today.plusDays(1), today.plusDays(3));
+		pay(invoiceIdOf(reservationId), "179.80", "CARD");
+
+		assertThat(mvc.put()
+			.uri("/api/reservations/{id}", reservationId)
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body(today.plusDays(1), today.plusDays(4)))).hasStatusOk();
+
+		assertThat(invoicesOf(reservationId)).bodyJson().isLenientlyEqualTo("""
+				{"content": [{"status": "PARTIALLY_PAID", "amountTotal": 269.70, "balance": 89.90}]}
+				""");
+	}
+
+	@Test
+	void cancelledInvoiceTakesNoPayment() throws Exception {
+		String reservationId = book(today.plusDays(1), today.plusDays(3));
+		reservationAction(reservationId, "cancel");
+
+		assertThat(pay(invoiceIdOf(reservationId), "10.00", "CASH")).hasStatus(HttpStatus.CONFLICT)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo("Facture annulée : aucun paiement ne peut y être enregistré");
+	}
+
+	private MvcTestResult pay(String invoiceId, String amount, String method) {
+		return mvc.post()
+			.uri("/api/invoices/{id}/payments", invoiceId)
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{"amount": %s, "method": "%s"}
+					""".formatted(amount, method))
+			.exchange();
+	}
+
+	private MvcTestResult reservationAction(String reservationId, String action) {
+		return mvc.patch().uri("/api/reservations/{id}/" + action, reservationId).with(receptionist()).exchange();
+	}
+
+	private String invoiceIdOf(String reservationId) throws Exception {
+		return JsonPath.read(invoicesOf(reservationId).getResponse().getContentAsString(), "$.content[0].id");
+	}
+
 	private MvcTestResult invoicesOf(String reservationId) {
 		return mvc.get().uri("/api/invoices?reservationId={id}", reservationId).with(receptionist()).exchange();
 	}

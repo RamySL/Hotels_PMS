@@ -44,6 +44,15 @@ public class Payment {
 		// requis par JPA
 	}
 
+	/** Créé par Invoice.recordPayment, qui vérifie les règles avant de l'ajouter. */
+	Payment(Invoice invoice, BigDecimal amount, PaymentMethod paymentMethod, User recordedBy, Instant paidAt) {
+		this.invoice = invoice;
+		this.amount = amount;
+		this.paymentMethod = paymentMethod;
+		this.recordedBy = recordedBy;
+		this.paidAt = paidAt;
+	}
+
 	public UUID getId() {
 		return id;
 	}

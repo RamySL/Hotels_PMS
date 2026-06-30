@@ -196,6 +196,28 @@ class ReservationServiceTest {
 	}
 
 	@Test
+	void checkOutRequiresASettledInvoice() {
+		Reservation stay = checkedIn();
+		doThrow(new BusinessRuleException("La facture n'est pas soldée : il reste 179,80 € à payer"))
+			.when(invoiceService)
+			.ensureSettled(stay);
+
+		assertThatExceptionOfType(BusinessRuleException.class)
+			.isThrownBy(() -> reservationService.checkOut(RESERVATION_ID));
+		assertThat(stay.getStatus()).isEqualTo(ReservationStatus.CHECKED_IN);
+	}
+
+	@Test
+	void settledStayChecksOut() {
+		Reservation stay = checkedIn();
+
+		reservationService.checkOut(RESERVATION_ID);
+
+		verify(invoiceService).ensureSettled(stay);
+		assertThat(stay.getStatus()).isEqualTo(ReservationStatus.CHECKED_OUT);
+	}
+
+	@Test
 	void checkInUsesTheHotelDayEvenJustAfterMidnight() {
 		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée d'arrivée a commencé à l'hôtel
 		Clock justAfterMidnightInParis = Clock.fixed(Instant.parse("2030-01-14T23:30:00Z"), PARIS);
@@ -212,6 +234,13 @@ class ReservationServiceTest {
 		when(clientRepository.findById(CLIENT_ID)).thenReturn(Optional.of(client));
 		when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room101));
 		when(userRepository.getReferenceById(USER_ID)).thenReturn(receptionist);
+	}
+
+	private Reservation checkedIn() {
+		Reservation stay = existing(TODAY, TODAY.plusDays(2));
+		stay.checkIn(TODAY);
+		when(reservationRepository.findById(RESERVATION_ID)).thenReturn(Optional.of(stay));
+		return stay;
 	}
 
 	private Reservation existing(LocalDate checkIn, LocalDate checkOut) {

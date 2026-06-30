@@ -5,9 +5,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
+import com.pms.hotel.common.BusinessRuleException;
 import com.pms.hotel.reservation.Reservation;
+import com.pms.hotel.user.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -76,6 +79,33 @@ public class Invoice {
 	/** Réservation annulée : la facture n'est plus due, mais ses paiements restent visibles. */
 	public void cancel() {
 		this.status = InvoiceStatus.CANCELLED;
+	}
+
+	/** Encaisse un paiement, sans jamais dépasser le reste à payer, et recalcule le statut. */
+	public void recordPayment(BigDecimal amount, PaymentMethod method, User recordedBy, Instant paidAt) {
+		if (status == InvoiceStatus.CANCELLED) {
+			throw new BusinessRuleException("Facture annulée : aucun paiement ne peut y être enregistré");
+		}
+		if (status == InvoiceStatus.PAID) {
+			throw new BusinessRuleException("Cette facture est déjà soldée");
+		}
+		if (amount.compareTo(balance()) > 0) {
+			throw new BusinessRuleException("Le paiement dépasse le reste à payer (" + euros(balance()) + ")");
+		}
+		payments.add(new Payment(this, amount, method, recordedBy, paidAt));
+		amountPaid = amountPaid.add(amount);
+		refreshStatus();
+	}
+
+	/** Le check-out exige une facture soldée : le règlement différé viendra en V2. */
+	public void ensureSettled() {
+		if (status != InvoiceStatus.PAID) {
+			throw new BusinessRuleException("La facture n'est pas soldée : il reste " + euros(balance()) + " à payer");
+		}
+	}
+
+	private static String euros(BigDecimal amount) {
+		return String.format(Locale.FRANCE, "%.2f €", amount);
 	}
 
 	/**

@@ -93,6 +93,21 @@ class ReservationLifecycleIntegrationTest {
 			.extractingPath("$.totalPrice")
 			.isEqualTo(269.70);
 
+		// Le check-out exige une facture soldée : le client règle son séjour avant de partir
+		String invoiceId = JsonPath.read(mvc.get()
+			.uri("/api/invoices?reservationId={id}", id)
+			.with(receptionist())
+			.exchange()
+			.getResponse()
+			.getContentAsString(), "$.content[0].id");
+		assertThat(mvc.post()
+			.uri("/api/invoices/{id}/payments", invoiceId)
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{"amount": 269.70, "method": "CARD"}
+					""")).hasStatus(HttpStatus.CREATED);
+
 		assertThat(patch(id, "check-out")).hasStatusOk()
 			.bodyJson()
 			.extractingPath("$.status")
