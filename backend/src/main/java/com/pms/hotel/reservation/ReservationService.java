@@ -21,7 +21,6 @@ import com.pms.hotel.client.Client;
 import com.pms.hotel.client.ClientRepository;
 import com.pms.hotel.common.BusinessRuleException;
 import com.pms.hotel.common.ResourceNotFoundException;
-import com.pms.hotel.invoice.InvoiceService;
 import com.pms.hotel.room.Room;
 import com.pms.hotel.room.RoomRepository;
 import com.pms.hotel.user.UserRepository;
@@ -42,19 +41,19 @@ public class ReservationService {
 
 	private final AvailabilityService availabilityService;
 
-	private final InvoiceService invoiceService;
+	private final ReservationBilling billing;
 
 	private final Clock clock;
 
 	public ReservationService(ReservationRepository reservationRepository, ClientRepository clientRepository,
 			RoomRepository roomRepository, UserRepository userRepository, AvailabilityService availabilityService,
-			InvoiceService invoiceService, Clock clock) {
+			ReservationBilling billing, Clock clock) {
 		this.reservationRepository = reservationRepository;
 		this.clientRepository = clientRepository;
 		this.roomRepository = roomRepository;
 		this.userRepository = userRepository;
 		this.availabilityService = availabilityService;
-		this.invoiceService = invoiceService;
+		this.billing = billing;
 		this.clock = clock;
 	}
 
@@ -83,7 +82,7 @@ public class ReservationService {
 		availabilityService.ensureBookable(room, request.checkInDate(), request.checkOutDate(), null);
 		reservationRepository.save(reservation);
 		flushOrRefuseOverlap(room);
-		invoiceService.createFor(reservation);
+		billing.reservationBooked(reservation);
 		return ReservationResponse.from(reservation);
 	}
 
@@ -105,7 +104,7 @@ public class ReservationService {
 		availabilityService.ensureBookable(room, request.checkInDate(), request.checkOutDate(), id);
 		reservation.reschedule(room, request.checkInDate(), request.checkOutDate(), request.numberOfGuests());
 		flushOrRefuseOverlap(room);
-		invoiceService.updateAmount(reservation);
+		billing.reservationRescheduled(reservation);
 		return ReservationResponse.from(reservation);
 	}
 
@@ -119,7 +118,7 @@ public class ReservationService {
 	@Transactional
 	public ReservationResponse checkOut(UUID id) {
 		Reservation reservation = findReservation(id);
-		invoiceService.ensureSettled(reservation);
+		billing.ensureSettled(reservation);
 		reservation.checkOut();
 		return ReservationResponse.from(reservation);
 	}
@@ -128,7 +127,7 @@ public class ReservationService {
 	public ReservationResponse cancel(UUID id) {
 		Reservation reservation = findReservation(id);
 		reservation.cancel();
-		invoiceService.cancelFor(reservation);
+		billing.reservationCancelled(reservation);
 		return ReservationResponse.from(reservation);
 	}
 

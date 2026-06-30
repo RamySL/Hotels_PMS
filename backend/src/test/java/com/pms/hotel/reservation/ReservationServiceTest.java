@@ -28,7 +28,6 @@ import com.pms.hotel.client.Client;
 import com.pms.hotel.client.ClientRepository;
 import com.pms.hotel.common.BusinessRuleException;
 import com.pms.hotel.common.ResourceNotFoundException;
-import com.pms.hotel.invoice.InvoiceService;
 import com.pms.hotel.room.Room;
 import com.pms.hotel.room.RoomRepository;
 import com.pms.hotel.room.RoomType;
@@ -67,7 +66,7 @@ class ReservationServiceTest {
 	private AvailabilityService availabilityService;
 
 	@Mock
-	private InvoiceService invoiceService;
+	private ReservationBilling billing;
 
 	private ReservationService reservationService;
 
@@ -82,7 +81,7 @@ class ReservationServiceTest {
 	void setUp() {
 		Clock clock = Clock.fixed(TODAY.atStartOfDay(PARIS).toInstant(), PARIS);
 		reservationService = new ReservationService(reservationRepository, clientRepository, roomRepository,
-				userRepository, availabilityService, invoiceService, clock);
+				userRepository, availabilityService, billing, clock);
 	}
 
 	@Test
@@ -96,7 +95,7 @@ class ReservationServiceTest {
 		assertThat(created.createdBy().lastName()).isEqualTo("Bernard");
 		verify(availabilityService).ensureBookable(room101, TODAY, TODAY.plusDays(3), null);
 		verify(reservationRepository).save(any(Reservation.class));
-		verify(invoiceService).createFor(any(Reservation.class));
+		verify(billing).reservationBooked(any(Reservation.class));
 	}
 
 	@Test
@@ -126,7 +125,7 @@ class ReservationServiceTest {
 		assertThatExceptionOfType(BusinessRuleException.class)
 			.isThrownBy(() -> reservationService.create(request(TODAY, TODAY.plusDays(2), 2), USER_ID));
 		verify(reservationRepository, never()).save(any());
-		verifyNoInteractions(invoiceService);
+		verifyNoInteractions(billing);
 	}
 
 	@Test
@@ -162,7 +161,7 @@ class ReservationServiceTest {
 		verify(availabilityService).ensureBookable(room101, TODAY.plusDays(2), TODAY.plusDays(5), RESERVATION_ID);
 		assertThat(updated.nights()).isEqualTo(3);
 		assertThat(updated.totalPrice()).isEqualByComparingTo("269.70");
-		verify(invoiceService).updateAmount(reservation);
+		verify(billing).reservationRescheduled(reservation);
 	}
 
 	@Test
@@ -173,7 +172,7 @@ class ReservationServiceTest {
 		reservationService.cancel(RESERVATION_ID);
 
 		assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
-		verify(invoiceService).cancelFor(reservation);
+		verify(billing).reservationCancelled(reservation);
 	}
 
 	@Test
@@ -199,7 +198,7 @@ class ReservationServiceTest {
 	void checkOutRequiresASettledInvoice() {
 		Reservation stay = checkedIn();
 		doThrow(new BusinessRuleException("La facture n'est pas soldée : il reste 179,80 € à payer"))
-			.when(invoiceService)
+			.when(billing)
 			.ensureSettled(stay);
 
 		assertThatExceptionOfType(BusinessRuleException.class)
@@ -213,7 +212,7 @@ class ReservationServiceTest {
 
 		reservationService.checkOut(RESERVATION_ID);
 
-		verify(invoiceService).ensureSettled(stay);
+		verify(billing).ensureSettled(stay);
 		assertThat(stay.getStatus()).isEqualTo(ReservationStatus.CHECKED_OUT);
 	}
 
@@ -222,7 +221,7 @@ class ReservationServiceTest {
 		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée d'arrivée a commencé à l'hôtel
 		Clock justAfterMidnightInParis = Clock.fixed(Instant.parse("2030-01-14T23:30:00Z"), PARIS);
 		ReservationService service = new ReservationService(reservationRepository, clientRepository,
-				roomRepository, userRepository, availabilityService, invoiceService, justAfterMidnightInParis);
+				roomRepository, userRepository, availabilityService, billing, justAfterMidnightInParis);
 		Reservation arrivingToday = new Reservation(client, room101, LocalDate.of(2030, 1, 15),
 				LocalDate.of(2030, 1, 17), 2, receptionist, Instant.EPOCH);
 		when(reservationRepository.findById(RESERVATION_ID)).thenReturn(Optional.of(arrivingToday));

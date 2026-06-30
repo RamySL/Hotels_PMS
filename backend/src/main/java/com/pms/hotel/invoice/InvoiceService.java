@@ -17,10 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pms.hotel.common.ResourceNotFoundException;
 import com.pms.hotel.reservation.Reservation;
+import com.pms.hotel.reservation.ReservationBilling;
 import com.pms.hotel.user.UserRepository;
 
+/**
+ * Facturation : consultation et encaissement des factures, et implémentation de
+ * ReservationBilling pour les réservations (ADR-007).
+ */
 @Service
-public class InvoiceService {
+public class InvoiceService implements ReservationBilling {
 
 	/** Factures les plus récentes d'abord ; l'id départage pour que les pages restent stables. */
 	private static final Sort SORT = Sort.by(Sort.Order.desc("issuedAt"), Sort.Order.asc("id"));
@@ -38,23 +43,27 @@ public class InvoiceService {
 	}
 
 	/** Facture émise à la création de la réservation, dans la même transaction. */
+	@Override
 	@Transactional
-	public void createFor(Reservation reservation) {
+	public void reservationBooked(Reservation reservation) {
 		invoiceRepository.save(new Invoice(reservation, Instant.now(clock)));
 	}
 
 	/** Le séjour a changé : la facture suit le nouveau prix. */
+	@Override
 	@Transactional
-	public void updateAmount(Reservation reservation) {
+	public void reservationRescheduled(Reservation reservation) {
 		findByReservation(reservation).updateTotal(reservation.getTotalPrice());
 	}
 
+	@Override
 	@Transactional
-	public void cancelFor(Reservation reservation) {
+	public void reservationCancelled(Reservation reservation) {
 		findByReservation(reservation).cancel();
 	}
 
 	/** Refuse (409) le check-out tant que la facture de la réservation n'est pas soldée. */
+	@Override
 	@Transactional(readOnly = true)
 	public void ensureSettled(Reservation reservation) {
 		findByReservation(reservation).ensureSettled();
