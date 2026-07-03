@@ -37,10 +37,11 @@ public record DashboardResponse(LocalDate date, List<Stay> arrivals, List<Stay> 
 	public record Occupancy(long occupiedRooms, long roomsInService, BigDecimal rate) {
 
 		static Occupancy of(long occupiedRooms, long roomsInService) {
+			// L'arrondi se fait dans la division : sans échelle, divide exige un résultat exact et
+			// lève une ArithmeticException dès que le taux ne tombe pas juste (2 sur 3 : 66,66…)
 			BigDecimal rate = roomsInService == 0 ? BigDecimal.ZERO
 					: BigDecimal.valueOf(occupiedRooms * 100)
-						.divide(BigDecimal.valueOf(roomsInService))
-						.setScale(1, RoundingMode.HALF_UP);
+						.divide(BigDecimal.valueOf(roomsInService), 1, RoundingMode.HALF_UP);
 			return new Occupancy(occupiedRooms, roomsInService, rate);
 		}
 
