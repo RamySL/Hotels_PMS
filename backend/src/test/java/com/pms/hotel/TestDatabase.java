@@ -3,8 +3,8 @@ package com.pms.hotel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Remise à vide de la base entre deux tests d'intégration, qui ne sont pas transactionnels
- * (voir le §6.3 du doc). Les comptes du seed V2 sont conservés.
+ * Remise à vide de la base entre deux tests d'intégration, qui ne sont pas
+ * transactionnels (voir le §6.3 du doc). Les comptes du seed V2 sont conservés.
  */
 public final class TestDatabase {
 

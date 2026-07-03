@@ -75,9 +75,9 @@ class ReservationControllerTest {
 	void listFiltersAreReadFromIsoDates() {
 		when(reservationService.search(any(), any(), any(), any())).thenReturn(Page.empty());
 
-		assertThat(mvc.get()
-			.uri("/api/reservations?from=2026-10-10&to=2026-10-17&status=CONFIRMED")
-			.with(receptionist())).hasStatusOk();
+		assertThat(
+				mvc.get().uri("/api/reservations?from=2026-10-10&to=2026-10-17&status=CONFIRMED").with(receptionist()))
+			.hasStatusOk();
 		verify(reservationService).search(eq(LocalDate.of(2026, 10, 10)), eq(LocalDate.of(2026, 10, 17)),
 				eq(ReservationStatus.CONFIRMED), any());
 	}

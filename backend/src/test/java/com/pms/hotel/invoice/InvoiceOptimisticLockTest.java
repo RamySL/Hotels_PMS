@@ -38,9 +38,9 @@ import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.RollbackException;
 
 /**
- * Deux postes encaissent la même facture en même temps : sans @Version, le second écraserait
- * amount_paid et l'un des deux paiements serait perdu. Chaque poste a ici sa propre
- * transaction, d'où l'absence de transaction de test.
+ * Deux postes encaissent la même facture en même temps : sans @Version, le second
+ * écraserait amount_paid et l'un des deux paiements serait perdu. Chaque poste a ici sa
+ * propre transaction, d'où l'absence de transaction de test.
  */
 @DataJpaTest
 @Import(TestcontainersConfiguration.class)
@@ -114,7 +114,8 @@ class InvoiceOptimisticLockTest {
 		}
 
 		assertThat(jdbcTemplate.queryForObject("SELECT amount_paid FROM invoices WHERE id = ?", BigDecimal.class,
-				invoiceId)).isEqualByComparingTo("50.00");
+				invoiceId))
+			.isEqualByComparingTo("50.00");
 		assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM payments", Integer.class)).isEqualTo(1);
 	}
 

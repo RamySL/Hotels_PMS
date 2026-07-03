@@ -22,8 +22,8 @@ import com.pms.hotel.TestDatabase;
 import com.pms.hotel.TestcontainersConfiguration;
 
 /**
- * Parcours des clients sur un vrai PostgreSQL. Sans @Transactional (voir le §6.3 du doc) :
- * chaque requête s'exécute dans ses propres transactions, comme en production.
+ * Parcours des clients sur un vrai PostgreSQL. Sans @Transactional (voir le §6.3 du doc)
+ * : chaque requête s'exécute dans ses propres transactions, comme en production.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -101,11 +101,15 @@ class ClientApiIntegrationTest {
 	void updateReplacesTheRecordAndTheSearchFollows() throws Exception {
 		String id = create(HELENE);
 
-		assertThat(mvc.put().uri("/api/clients/{id}", id).with(receptionist()).contentType(MediaType.APPLICATION_JSON).content("""
-				{"firstName": "Hélène", "lastName": "Martin"}
-				""")).hasStatusOk().bodyJson().isLenientlyEqualTo("""
-				{"lastName": "Martin", "email": null, "phone": null}
-				""");
+		assertThat(mvc.put()
+			.uri("/api/clients/{id}", id)
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{"firstName": "Hélène", "lastName": "Martin"}
+					""")).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+					{"lastName": "Martin", "email": null, "phone": null}
+					""");
 		assertThat(mvc.get().uri("/api/clients?search=martin").with(receptionist())).bodyJson()
 			.extractingPath("$.page.totalElements")
 			.isEqualTo(1);

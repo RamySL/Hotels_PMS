@@ -21,9 +21,7 @@ class PmsApplicationTests {
 
 	@Test
 	void flywayIsAutoConfigured() {
-		assertThat(flyway)
-			.as("Flyway doit être auto-configuré (spring-boot-starter-flyway)")
-			.isNotNull();
+		assertThat(flyway).as("Flyway doit être auto-configuré (spring-boot-starter-flyway)").isNotNull();
 	}
 
 }

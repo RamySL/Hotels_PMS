@@ -31,8 +31,7 @@ class RoomTest {
 
 	@Test
 	void occupiedCannotBeSetManually() {
-		assertThatExceptionOfType(BusinessRuleException.class)
-			.isThrownBy(() -> room.changeStatus(RoomStatus.OCCUPIED))
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(() -> room.changeStatus(RoomStatus.OCCUPIED))
 			.withMessage("Le statut OCCUPIED est posé par le check-in, pas manuellement");
 		assertThat(room.getStatus()).isEqualTo(RoomStatus.READY);
 	}

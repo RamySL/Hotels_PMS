@@ -9,8 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.pms.hotel.user.User;
 
 /**
- * Adapte l'entité User au contrat de Spring Security, sans que l'entité en dépende. Le login
- * récupère ainsi l'utilisateur authentifié sans seconde requête.
+ * Adapte l'entité User au contrat de Spring Security, sans que l'entité en dépende. Le
+ * login récupère ainsi l'utilisateur authentifié sans seconde requête.
  */
 record AuthenticatedUser(User user) implements UserDetails {
 

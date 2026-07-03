@@ -7,7 +7,10 @@ import java.util.UUID;
 import com.pms.hotel.room.Room;
 import com.pms.hotel.room.RoomType;
 
-/** Chambre libre sur la période demandée, avec ce qu'il faut pour remplir le formulaire de réservation. */
+/**
+ * Chambre libre sur la période demandée, avec ce qu'il faut pour remplir le formulaire de
+ * réservation.
+ */
 public record AvailableRoomResponse(UUID roomId, String roomNumber, int floor, String roomTypeName, int capacity,
 		BigDecimal pricePerNight, long nights, BigDecimal totalPrice) {
 

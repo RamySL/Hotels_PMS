@@ -103,8 +103,7 @@ class DashboardApiIntegrationTest {
 				]}
 				""".formatted(today, twoNights, oneNight));
 
-		assertThat(mvc.patch().uri("/api/reservations/{id}/check-in", twoNights).with(receptionist()))
-			.hasStatusOk();
+		assertThat(mvc.patch().uri("/api/reservations/{id}/check-in", twoNights).with(receptionist())).hasStatusOk();
 
 		assertThat(dashboard()).bodyJson().extractingPath("$.arrivals[*].roomNumber").asArray().containsExactly("102");
 	}
@@ -120,8 +119,7 @@ class DashboardApiIntegrationTest {
 				""".formatted(forgotten, today.minusDays(1)));
 
 		pay(forgotten, "179.80");
-		assertThat(mvc.patch().uri("/api/reservations/{id}/check-out", forgotten).with(receptionist()))
-			.hasStatusOk();
+		assertThat(mvc.patch().uri("/api/reservations/{id}/check-out", forgotten).with(receptionist())).hasStatusOk();
 
 		assertThat(dashboard()).bodyJson().extractingPath("$.departures").asArray().isEmpty();
 	}
@@ -189,7 +187,10 @@ class DashboardApiIntegrationTest {
 		return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 	}
 
-	/** L'API refuse une arrivée passée : un séjour commencé avant aujourd'hui est créé directement. */
+	/**
+	 * L'API refuse une arrivée passée : un séjour commencé avant aujourd'hui est créé
+	 * directement.
+	 */
 	private String stayCheckedIn(Room room, LocalDate checkIn, LocalDate checkOut) {
 		User receptionist = userRepository.findById(TestAuthentication.RECEPTIONIST_ID).orElseThrow();
 		Reservation stay = new Reservation(client, room, checkIn, checkOut, 2, receptionist, Instant.now(clock));

@@ -49,7 +49,9 @@ public class Invoice {
 
 	private Instant issuedAt;
 
-	/** Verrouillage optimiste : deux encaissements simultanés ne peuvent pas s'écraser. */
+	/**
+	 * Verrouillage optimiste : deux encaissements simultanés ne peuvent pas s'écraser.
+	 */
 	@Version
 	private long version;
 
@@ -76,12 +78,18 @@ public class Invoice {
 		refreshStatus();
 	}
 
-	/** Réservation annulée : la facture n'est plus due, mais ses paiements restent visibles. */
+	/**
+	 * Réservation annulée : la facture n'est plus due, mais ses paiements restent
+	 * visibles.
+	 */
 	public void cancel() {
 		this.status = InvoiceStatus.CANCELLED;
 	}
 
-	/** Encaisse un paiement, sans jamais dépasser le reste à payer, et recalcule le statut. */
+	/**
+	 * Encaisse un paiement, sans jamais dépasser le reste à payer, et recalcule le
+	 * statut.
+	 */
 	public void recordPayment(BigDecimal amount, PaymentMethod method, User recordedBy, Instant paidAt) {
 		if (status == InvoiceStatus.CANCELLED) {
 			throw new BusinessRuleException("Facture annulée : aucun paiement ne peut y être enregistré");
@@ -109,8 +117,8 @@ public class Invoice {
 	}
 
 	/**
-	 * Reste à payer : positif s'il manque de l'argent, négatif en cas de trop-perçu. Une facture
-	 * annulée n'est plus due : tout ce qui a été payé devient un trop-perçu.
+	 * Reste à payer : positif s'il manque de l'argent, négatif en cas de trop-perçu. Une
+	 * facture annulée n'est plus due : tout ce qui a été payé devient un trop-perçu.
 	 */
 	public BigDecimal balance() {
 		BigDecimal due = status == InvoiceStatus.CANCELLED ? BigDecimal.ZERO : amountTotal;

@@ -32,8 +32,9 @@ import com.pms.hotel.room.RoomType;
 import com.pms.hotel.room.RoomTypeRepository;
 
 /**
- * Création et modification des réservations sur un vrai PostgreSQL. Sans @Transactional (voir
- * le §6.3 du doc) : chaque requête s'exécute dans ses propres transactions, comme en production.
+ * Création et modification des réservations sur un vrai PostgreSQL. Sans @Transactional
+ * (voir le §6.3 du doc) : chaque requête s'exécute dans ses propres transactions, comme
+ * en production.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

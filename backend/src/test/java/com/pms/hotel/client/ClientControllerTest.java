@@ -77,18 +77,20 @@ class ClientControllerTest {
 		ClientResponse created = dupont();
 		when(clientService.create(any())).thenReturn(created);
 
-		assertThat(mvc.post().uri("/api/clients").with(receptionist()).contentType(MediaType.APPLICATION_JSON).content("""
-				{"firstName": "Jean", "lastName": "Dupont"}
-				"""))
+		assertThat(
+				mvc.post().uri("/api/clients").with(receptionist()).contentType(MediaType.APPLICATION_JSON).content("""
+						{"firstName": "Jean", "lastName": "Dupont"}
+						"""))
 			.hasStatus(HttpStatus.CREATED)
 			.hasHeader(HttpHeaders.LOCATION, "http://localhost/api/clients/" + created.id());
 	}
 
 	@Test
 	void invalidClientIsRejectedFieldByField() {
-		assertThat(mvc.post().uri("/api/clients").with(receptionist()).contentType(MediaType.APPLICATION_JSON).content("""
-				{"firstName": " ", "lastName": "", "email": "pas-un-email", "phone": "06 12 AB"}
-				"""))
+		assertThat(
+				mvc.post().uri("/api/clients").with(receptionist()).contentType(MediaType.APPLICATION_JSON).content("""
+						{"firstName": " ", "lastName": "", "email": "pas-un-email", "phone": "06 12 AB"}
+						"""))
 			.hasStatus(HttpStatus.BAD_REQUEST)
 			.bodyJson()
 			.extractingPath("$.errors")

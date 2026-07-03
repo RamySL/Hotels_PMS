@@ -60,7 +60,10 @@ public class Reservation {
 		// requis par JPA
 	}
 
-	/** Une réservation est confirmée dès sa création (pas d'état « en attente » dans le MVP). */
+	/**
+	 * Une réservation est confirmée dès sa création (pas d'état « en attente » dans le
+	 * MVP).
+	 */
 	public Reservation(Client client, Room room, LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests,
 			User createdBy, Instant createdAt) {
 		this.client = client;
@@ -84,8 +87,8 @@ public class Reservation {
 	}
 
 	/**
-	 * Refuse une modification interdite par le statut : tout peut changer avant le check-in ;
-	 * pendant le séjour, seule la date de départ ; plus rien ensuite.
+	 * Refuse une modification interdite par le statut : tout peut changer avant le
+	 * check-in ; pendant le séjour, seule la date de départ ; plus rien ensuite.
 	 */
 	public void checkCanBeRescheduled(Room room, LocalDate checkInDate, int numberOfGuests) {
 		switch (status) {
@@ -108,7 +111,10 @@ public class Reservation {
 		schedule(room, checkInDate, checkOutDate, numberOfGuests);
 	}
 
-	/** Arrivée du client, pendant son séjour : la chambre doit être prête et devient occupée. */
+	/**
+	 * Arrivée du client, pendant son séjour : la chambre doit être prête et devient
+	 * occupée.
+	 */
 	public void checkIn(LocalDate today) {
 		if (status != ReservationStatus.CONFIRMED) {
 			throw new BusinessRuleException("Seule une réservation confirmée peut faire l'objet d'un check-in");
@@ -133,8 +139,8 @@ public class Reservation {
 	}
 
 	/**
-	 * Seule une réservation confirmée, dont le séjour n'a pas commencé, peut être annulée :
-	 * annuler un séjour en cours libérerait la chambre alors que le client l'occupe.
+	 * Seule une réservation confirmée, dont le séjour n'a pas commencé, peut être annulée
+	 * : annuler un séjour en cours libérerait la chambre alors que le client l'occupe.
 	 */
 	public void cancel() {
 		if (status == ReservationStatus.CANCELLED) {

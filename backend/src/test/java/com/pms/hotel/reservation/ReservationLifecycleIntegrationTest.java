@@ -30,7 +30,10 @@ import com.pms.hotel.room.RoomRepository;
 import com.pms.hotel.room.RoomType;
 import com.pms.hotel.room.RoomTypeRepository;
 
-/** Cycle de vie complet d'une réservation, sur un vrai PostgreSQL et sans @Transactional (§6.3). */
+/**
+ * Cycle de vie complet d'une réservation, sur un vrai PostgreSQL et sans @Transactional
+ * (§6.3).
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -77,10 +80,7 @@ class ReservationLifecycleIntegrationTest {
 	void fromBookingToDeparture() throws Exception {
 		String id = idOf(book(today, today.plusDays(2)));
 
-		assertThat(patch(id, "check-in")).hasStatusOk()
-			.bodyJson()
-			.extractingPath("$.status")
-			.isEqualTo("CHECKED_IN");
+		assertThat(patch(id, "check-in")).hasStatusOk().bodyJson().extractingPath("$.status").isEqualTo("CHECKED_IN");
 		assertThat(roomStatus()).isEqualTo("OCCUPIED");
 		assertThat(changeRoomStatus("READY")).hasStatus(HttpStatus.CONFLICT);
 
@@ -93,7 +93,8 @@ class ReservationLifecycleIntegrationTest {
 			.extractingPath("$.totalPrice")
 			.isEqualTo(269.70);
 
-		// Le check-out exige une facture soldée : le client règle son séjour avant de partir
+		// Le check-out exige une facture soldée : le client règle son séjour
+		// avant de partir
 		String invoiceId = JsonPath.read(mvc.get()
 			.uri("/api/invoices?reservationId={id}", id)
 			.with(receptionist())
@@ -108,10 +109,7 @@ class ReservationLifecycleIntegrationTest {
 					{"amount": 269.70, "method": "CARD"}
 					""")).hasStatus(HttpStatus.CREATED);
 
-		assertThat(patch(id, "check-out")).hasStatusOk()
-			.bodyJson()
-			.extractingPath("$.status")
-			.isEqualTo("CHECKED_OUT");
+		assertThat(patch(id, "check-out")).hasStatusOk().bodyJson().extractingPath("$.status").isEqualTo("CHECKED_OUT");
 		assertThat(roomStatus()).isEqualTo("CLEANING");
 		// Le ménage fait, la réception remet la chambre en service pour le client suivant
 		assertThat(changeRoomStatus("READY")).hasStatusOk();

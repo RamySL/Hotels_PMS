@@ -39,7 +39,8 @@ class RoomServiceTest {
 
 	@Test
 	void listsRoomsWithTheirType() {
-		when(roomRepository.findAllByOrderByFloorAscRoomNumberAsc()).thenReturn(List.of(new Room(doubleRoom, "101", 1)));
+		when(roomRepository.findAllByOrderByFloorAscRoomNumberAsc())
+			.thenReturn(List.of(new Room(doubleRoom, "101", 1)));
 
 		assertThat(roomService.findAll(null)).singleElement().satisfies(room -> {
 			assertThat(room.roomNumber()).isEqualTo("101");

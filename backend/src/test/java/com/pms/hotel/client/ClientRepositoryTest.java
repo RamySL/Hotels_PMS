@@ -46,9 +46,11 @@ class ClientRepositoryTest {
 
 	@Test
 	void searchIgnoresAccentsAndCase() {
-		clientRepository.saveAll(List.of(new Client("Hélène", "Lefèvre", null, null), new Client("Jean", "Dupont", null, null)));
+		clientRepository
+			.saveAll(List.of(new Client("Hélène", "Lefèvre", null, null), new Client("Jean", "Dupont", null, null)));
 
-		assertThat(clientRepository.findBySearchTextContaining(ClientSearch.searchKey("LEFEVRE"), PageRequest.of(0, 20)))
+		assertThat(
+				clientRepository.findBySearchTextContaining(ClientSearch.searchKey("LEFEVRE"), PageRequest.of(0, 20)))
 			.extracting(Client::getLastName)
 			.containsExactly("Lefèvre");
 	}

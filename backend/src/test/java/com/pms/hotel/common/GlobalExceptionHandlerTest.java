@@ -33,8 +33,7 @@ class GlobalExceptionHandlerTest {
 
 	@Test
 	void resourceNotFoundBecomes404() {
-		assertThat(mvc.get().uri("/api/test/not-found").with(jwt()))
-			.hasStatus(HttpStatus.NOT_FOUND)
+		assertThat(mvc.get().uri("/api/test/not-found").with(jwt())).hasStatus(HttpStatus.NOT_FOUND)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.bodyJson()
 			.extractingPath("$.detail")
@@ -43,8 +42,7 @@ class GlobalExceptionHandlerTest {
 
 	@Test
 	void businessRuleViolationBecomes409() {
-		assertThat(mvc.get().uri("/api/test/conflict").with(jwt()))
-			.hasStatus(HttpStatus.CONFLICT)
+		assertThat(mvc.get().uri("/api/test/conflict").with(jwt())).hasStatus(HttpStatus.CONFLICT)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.bodyJson()
 			.extractingPath("$.detail")
@@ -60,8 +58,7 @@ class GlobalExceptionHandlerTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
 					{"name": "", "capacity": 0}
-					"""))
-			.hasStatus(HttpStatus.BAD_REQUEST)
+					""")).hasStatus(HttpStatus.BAD_REQUEST)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.bodyJson()
 			.isLenientlyEqualTo("""
@@ -79,13 +76,10 @@ class GlobalExceptionHandlerTest {
 
 	@Test
 	void validBodyPasses() {
-		assertThat(mvc.post()
-			.uri("/api/test/validation")
-			.with(jwt())
-			.contentType(MediaType.APPLICATION_JSON)
-			.content("""
-					{"name": "Suite", "capacity": 2}
-					"""))
+		assertThat(
+				mvc.post().uri("/api/test/validation").with(jwt()).contentType(MediaType.APPLICATION_JSON).content("""
+						{"name": "Suite", "capacity": 2}
+						"""))
 			.hasStatusOk();
 	}
 

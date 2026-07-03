@@ -28,8 +28,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
-	 * Échec du login. Même réponse pour un mot de passe faux, un email inconnu ou un compte
-	 * désactivé : l'API ne révèle pas quels comptes existent.
+	 * Échec du login. Même réponse pour un mot de passe faux, un email inconnu ou un
+	 * compte désactivé : l'API ne révèle pas quels comptes existent.
 	 */
 	@ExceptionHandler({ BadCredentialsException.class, AccountStatusException.class })
 	ResponseEntity<ProblemDetail> handleLoginFailure(AuthenticationException exception) {
@@ -62,7 +62,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return problem(HttpStatus.CONFLICT, exception.getMessage());
 	}
 
-	/** Verrouillage optimiste (@Version) : quelqu'un a modifié la même donnée entre-temps. */
+	/**
+	 * Verrouillage optimiste (@Version) : quelqu'un a modifié la même donnée entre-temps.
+	 */
 	@ExceptionHandler(OptimisticLockingFailureException.class)
 	ResponseEntity<ProblemDetail> handleConcurrentModification(OptimisticLockingFailureException exception) {
 		return problem(HttpStatus.CONFLICT,
@@ -70,8 +72,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	/**
-	 * Corps de requête invalide : chaque champ en erreur est détaillé dans « errors », pour
-	 * que le front affiche le message sous le champ concerné.
+	 * Corps de requête invalide : chaque champ en erreur est détaillé dans « errors »,
+	 * pour que le front affiche le message sous le champ concerné.
 	 */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception,

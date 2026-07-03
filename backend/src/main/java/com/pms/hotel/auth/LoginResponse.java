@@ -7,8 +7,8 @@ import com.pms.hotel.user.Role;
 import com.pms.hotel.user.User;
 
 /**
- * Réponse du login : le jeton d'accès, sa durée de validité en secondes, et le profil dont
- * le front a besoin dès la connexion.
+ * Réponse du login : le jeton d'accès, sa durée de validité en secondes, et le profil
+ * dont le front a besoin dès la connexion.
  */
 public record LoginResponse(String accessToken, String tokenType, long expiresIn, UserProfile user) {
 

@@ -18,7 +18,10 @@ public class AvailabilityController {
 		this.availabilityService = availabilityService;
 	}
 
-	/** Chambres libres sur [checkIn, checkOut), hors chambres hors service, avec le prix du séjour. */
+	/**
+	 * Chambres libres sur [checkIn, checkOut), hors chambres hors service, avec le prix
+	 * du séjour.
+	 */
 	@GetMapping("/api/rooms/availability")
 	public List<AvailableRoomResponse> findAvailableRooms(@RequestParam LocalDate checkIn,
 			@RequestParam LocalDate checkOut) {

@@ -58,7 +58,8 @@ class RoomRepositoryTest {
 	@Test
 	void listsRoomsByFloorThenNumber() {
 		RoomType suite = roomType("Suite");
-		roomRepository.saveAll(List.of(new Room(suite, "201", 2), new Room(suite, "102", 1), new Room(suite, "101", 1)));
+		roomRepository
+			.saveAll(List.of(new Room(suite, "201", 2), new Room(suite, "102", 1), new Room(suite, "101", 1)));
 
 		assertThat(roomRepository.findAllByOrderByFloorAscRoomNumberAsc()).extracting(Room::getRoomNumber)
 			.containsExactly("101", "102", "201");

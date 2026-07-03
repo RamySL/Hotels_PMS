@@ -38,15 +38,19 @@ public class SecurityConfig {
 			.resolveException(request, response, null, exception);
 
 		http
-			// API stateless authentifiée par jeton Bearer, sans cookie : pas de surface CSRF
+			// API stateless authentifiée par jeton Bearer, sans cookie :
+			// pas de surface CSRF
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.authorizeHttpRequests(requests -> requests
-				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/ping").permitAll()
+			.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.POST, "/api/auth/login")
+				.permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/ping")
+				.permitAll()
 				// Sans cela, une erreur 500 transmise à /error serait transformée en 401
-				.requestMatchers("/error").permitAll()
-				.anyRequest().authenticated())
+				.requestMatchers("/error")
+				.permitAll()
+				.anyRequest()
+				.authenticated())
 			.oauth2ResourceServer(resourceServer -> resourceServer
 				.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
 				.authenticationEntryPoint(entryPoint))

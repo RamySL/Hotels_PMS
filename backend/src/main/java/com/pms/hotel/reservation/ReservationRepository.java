@@ -21,9 +21,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID>,
 	Page<Reservation> findAll(Specification<Reservation> spec, Pageable pageable);
 
 	/**
-	 * Arrivées à faire ce jour-là : réservations confirmées dont le check-in est encore possible,
-	 * y compris un client attendu un jour précédent tant que son séjour n'est pas fini. Client et
-	 * chambre sont chargés dans la même requête.
+	 * Arrivées à faire ce jour-là : réservations confirmées dont le check-in est encore
+	 * possible, y compris un client attendu un jour précédent tant que son séjour n'est
+	 * pas fini. Client et chambre sont chargés dans la même requête.
 	 */
 	@Query("""
 			select r from Reservation r join fetch r.client join fetch r.room ro
@@ -33,8 +33,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID>,
 	List<Reservation> findExpectedArrivals(LocalDate day);
 
 	/**
-	 * Départs à faire ce jour-là : clients arrivés dont le départ est prévu ce jour-là ou avant
-	 * (check-out oublié). Client et chambre sont chargés dans la même requête.
+	 * Départs à faire ce jour-là : clients arrivés dont le départ est prévu ce jour-là ou
+	 * avant (check-out oublié). Client et chambre sont chargés dans la même requête.
 	 */
 	@Query("""
 			select r from Reservation r join fetch r.client join fetch r.room ro

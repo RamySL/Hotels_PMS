@@ -24,8 +24,9 @@ import com.pms.hotel.room.RoomService;
 import com.pms.hotel.room.RoomStatus;
 
 /**
- * Tableau de bord du jour : ce que la réception a encore à faire et l'état de l'hôtel. Il ne
- * définit aucune règle : il rassemble celles des réservations, de la facturation et des chambres.
+ * Tableau de bord du jour : ce que la réception a encore à faire et l'état de l'hôtel. Il
+ * ne définit aucune règle : il rassemble celles des réservations, de la facturation et
+ * des chambres.
  */
 @Service
 public class DashboardService {
@@ -65,8 +66,8 @@ public class DashboardService {
 	}
 
 	/**
-	 * Chambres en service vendues pour la nuit de ce soir : celles que la règle de disponibilité
-	 * ne propose plus sur [aujourd'hui, demain).
+	 * Chambres en service vendues pour la nuit de ce soir : celles que la règle de
+	 * disponibilité ne propose plus sur [aujourd'hui, demain).
 	 */
 	private Occupancy occupancy(LocalDate today) {
 		long roomsInService = roomRepository.countByStatusNot(RoomStatus.OUT_OF_SERVICE);
@@ -74,7 +75,10 @@ public class DashboardService {
 		return Occupancy.of(roomsInService - freeTonight, roomsInService);
 	}
 
-	/** Reste à payer de chaque réservation : leurs factures sont lues en une seule requête. */
+	/**
+	 * Reste à payer de chaque réservation : leurs factures sont lues en une seule
+	 * requête.
+	 */
 	private Map<UUID, BigDecimal> balancesOf(List<Reservation> reservations) {
 		if (reservations.isEmpty()) {
 			return Map.of();
@@ -90,7 +94,8 @@ public class DashboardService {
 			.toList();
 	}
 
-	// Chaque réservation reçoit sa facture à sa création, dans la même transaction (ADR-007)
+	// Chaque réservation reçoit sa facture à sa création, dans la même
+	// transaction (ADR-007)
 	private static BigDecimal balanceOf(Reservation reservation, Map<UUID, BigDecimal> balances) {
 		BigDecimal balance = balances.get(reservation.getId());
 		if (balance == null) {

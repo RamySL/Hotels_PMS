@@ -44,8 +44,8 @@ public class Room {
 	}
 
 	/**
-	 * Numéro sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc comparé
-	 * pour vérifier l'unicité.
+	 * Numéro sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc
+	 * comparé pour vérifier l'unicité.
 	 */
 	public static String normalizeRoomNumber(String roomNumber) {
 		return roomNumber.trim();
@@ -58,8 +58,8 @@ public class Room {
 	}
 
 	/**
-	 * Changement manuel de statut par le personnel (ménage fait, travaux…). OCCUPIED n'est
-	 * posé et levé que par le check-in et le check-out.
+	 * Changement manuel de statut par le personnel (ménage fait, travaux…). OCCUPIED
+	 * n'est posé et levé que par le check-in et le check-out.
 	 */
 	public void changeStatus(RoomStatus newStatus) {
 		if (newStatus == RoomStatus.OCCUPIED) {

@@ -25,7 +25,10 @@ public class AuthController {
 		this.jwtService = jwtService;
 	}
 
-	/** Un échec lève une AuthenticationException, traduite en 401 par GlobalExceptionHandler. */
+	/**
+	 * Un échec lève une AuthenticationException, traduite en 401 par
+	 * GlobalExceptionHandler.
+	 */
 	@PostMapping("/login")
 	public LoginResponse login(@Valid @RequestBody LoginRequest request) {
 		Authentication authentication = authenticationManager

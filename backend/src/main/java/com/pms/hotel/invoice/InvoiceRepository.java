@@ -19,8 +19,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID>, JpaSpec
 	/** Factures de plusieurs réservations, lues en une seule requête. */
 	List<Invoice> findByReservationIdIn(Collection<UUID> reservationIds);
 
-	// La liste affiche la réservation, son client et sa chambre : chargés par jointure. Les
-	// paiements, eux, sont chargés par lots (hibernate.default_batch_fetch_size)
+	// La liste affiche la réservation, son client et sa chambre : chargés par
+	// jointure. Les paiements, eux, sont chargés par lots
+	// (hibernate.default_batch_fetch_size)
 	@Override
 	@EntityGraph(attributePaths = { "reservation", "reservation.client", "reservation.room" })
 	Page<Invoice> findAll(Specification<Invoice> spec, Pageable pageable);

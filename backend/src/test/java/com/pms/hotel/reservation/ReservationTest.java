@@ -25,8 +25,7 @@ class ReservationTest {
 
 	private final Client client = new Client("Jean", "Dupont", null, null);
 
-	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard",
-			Role.RECEPTIONIST);
+	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard", Role.RECEPTIONIST);
 
 	@Test
 	void newReservationIsConfirmedAndPricedPerNight() {
@@ -51,9 +50,8 @@ class ReservationTest {
 
 	@Test
 	void guestsCannotExceedTheRoomTypeCapacity() {
-		assertThatExceptionOfType(BusinessRuleException.class)
-			.isThrownBy(() -> new Reservation(client, room101, ARRIVAL, ARRIVAL.plusDays(1), 3, receptionist,
-					Instant.EPOCH))
+		assertThatExceptionOfType(BusinessRuleException.class).isThrownBy(
+				() -> new Reservation(client, room101, ARRIVAL, ARRIVAL.plusDays(1), 3, receptionist, Instant.EPOCH))
 			.withMessage("La chambre 101 (Double) accueille 2 personnes au maximum");
 	}
 

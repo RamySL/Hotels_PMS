@@ -41,7 +41,10 @@ public class InvoiceController {
 		return invoiceService.findById(id);
 	}
 
-	/** Enregistre un paiement et renvoie la facture à jour ; l'auteur est l'utilisateur du jeton. */
+	/**
+	 * Enregistre un paiement et renvoie la facture à jour ; l'auteur est l'utilisateur du
+	 * jeton.
+	 */
 	@PostMapping("/{id}/payments")
 	@ResponseStatus(HttpStatus.CREATED)
 	public InvoiceResponse recordPayment(@PathVariable UUID id, @Valid @RequestBody PaymentRequest request,

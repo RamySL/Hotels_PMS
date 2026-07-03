@@ -34,8 +34,8 @@ public class RoomType {
 	}
 
 	/**
-	 * Nom sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc comparé
-	 * pour vérifier l'unicité.
+	 * Nom sans espaces superflus : c'est sous cette forme qu'il est stocké, et donc
+	 * comparé pour vérifier l'unicité.
 	 */
 	public static String normalizeName(String name) {
 		return name.trim();

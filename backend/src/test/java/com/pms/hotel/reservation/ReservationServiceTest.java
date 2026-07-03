@@ -74,8 +74,7 @@ class ReservationServiceTest {
 
 	private final Client client = new Client("Jean", "Dupont", null, null);
 
-	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard",
-			Role.RECEPTIONIST);
+	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard", Role.RECEPTIONIST);
 
 	@BeforeEach
 	void setUp() {
@@ -197,8 +196,7 @@ class ReservationServiceTest {
 	@Test
 	void checkOutRequiresASettledInvoice() {
 		Reservation stay = checkedIn();
-		doThrow(new BusinessRuleException("La facture n'est pas soldée : il reste 179,80 € à payer"))
-			.when(billing)
+		doThrow(new BusinessRuleException("La facture n'est pas soldée : il reste 179,80 € à payer")).when(billing)
 			.ensureSettled(stay);
 
 		assertThatExceptionOfType(BusinessRuleException.class)
@@ -218,10 +216,11 @@ class ReservationServiceTest {
 
 	@Test
 	void checkInUsesTheHotelDayEvenJustAfterMidnight() {
-		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée d'arrivée a commencé à l'hôtel
+		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée d'arrivée a
+		// commencé à l'hôtel
 		Clock justAfterMidnightInParis = Clock.fixed(Instant.parse("2030-01-14T23:30:00Z"), PARIS);
-		ReservationService service = new ReservationService(reservationRepository, clientRepository,
-				roomRepository, userRepository, availabilityService, billing, justAfterMidnightInParis);
+		ReservationService service = new ReservationService(reservationRepository, clientRepository, roomRepository,
+				userRepository, availabilityService, billing, justAfterMidnightInParis);
 		Reservation arrivingToday = new Reservation(client, room101, LocalDate.of(2030, 1, 15),
 				LocalDate.of(2030, 1, 17), 2, receptionist, Instant.EPOCH);
 		when(reservationRepository.findById(RESERVATION_ID)).thenReturn(Optional.of(arrivingToday));

@@ -15,9 +15,8 @@ public record InvoiceResponse(UUID id, InvoiceStatus status, BigDecimal amountTo
 		var client = reservation.getClient();
 		return new InvoiceResponse(invoice.getId(), invoice.getStatus(), invoice.getAmountTotal(),
 				invoice.getAmountPaid(), invoice.balance(), invoice.getIssuedAt(),
-				new ReservationSummary(reservation.getId(), reservation.getCheckInDate(),
-						reservation.getCheckOutDate(), client.getFirstName() + " " + client.getLastName(),
-						reservation.getRoom().getRoomNumber()),
+				new ReservationSummary(reservation.getId(), reservation.getCheckInDate(), reservation.getCheckOutDate(),
+						client.getFirstName() + " " + client.getLastName(), reservation.getRoom().getRoomNumber()),
 				invoice.getPayments().stream().map(PaymentResponse::from).toList());
 	}
 
@@ -25,8 +24,7 @@ public record InvoiceResponse(UUID id, InvoiceStatus status, BigDecimal amountTo
 			String roomNumber) {
 	}
 
-	public record PaymentResponse(UUID id, BigDecimal amount, PaymentMethod method, Instant paidAt,
-			String recordedBy) {
+	public record PaymentResponse(UUID id, BigDecimal amount, PaymentMethod method, Instant paidAt, String recordedBy) {
 
 		static PaymentResponse from(Payment payment) {
 			var user = payment.getRecordedBy();

@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Une réservation est confirmée dès sa création. Seules CONFIRMED et CHECKED_IN retiennent la
- * chambre sur la période.
+ * Une réservation est confirmée dès sa création. Seules CONFIRMED et CHECKED_IN
+ * retiennent la chambre sur la période.
  */
 public enum ReservationStatus {
 
@@ -22,7 +22,9 @@ public enum ReservationStatus {
 	/** Annulée : la réservation ne retient plus la chambre. */
 	CANCELLED;
 
-	/** Statuts qui retiennent la chambre : les mêmes que dans ex_reservations_no_overlap. */
+	/**
+	 * Statuts qui retiennent la chambre : les mêmes que dans ex_reservations_no_overlap.
+	 */
 	public static final Set<ReservationStatus> ACTIVE = Collections.unmodifiableSet(EnumSet.of(CONFIRMED, CHECKED_IN));
 
 }

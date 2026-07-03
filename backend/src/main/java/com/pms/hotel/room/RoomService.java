@@ -63,8 +63,7 @@ public class RoomService {
 	}
 
 	private RoomType findRoomType(UUID id) {
-		return roomTypeRepository.findById(id)
-			.orElseThrow(() -> new ResourceNotFoundException("Type de chambre", id));
+		return roomTypeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Type de chambre", id));
 	}
 
 	private static BusinessRuleException duplicateRoomNumber(String roomNumber) {

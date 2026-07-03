@@ -10,9 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Authentification par email et mot de passe, utilisée par le seul endpoint de login. Elle
- * est séparée de SecurityConfig pour que les tests @WebMvcTest qui importent SecurityConfig
- * n'aient pas besoin de la couche JPA.
+ * Authentification par email et mot de passe, utilisée par le seul endpoint de login.
+ * Elle est séparée de SecurityConfig pour que les tests @WebMvcTest qui importent
+ * SecurityConfig n'aient pas besoin de la couche JPA.
  */
 @Configuration
 public class AuthenticationConfig {

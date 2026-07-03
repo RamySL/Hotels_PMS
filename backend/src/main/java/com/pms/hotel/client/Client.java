@@ -37,8 +37,8 @@ public class Client {
 	}
 
 	/**
-	 * Email et téléphone sont facultatifs : un client qui réserve au comptoir ne les donne pas.
-	 * Une valeur vide est enregistrée comme absente.
+	 * Email et téléphone sont facultatifs : un client qui réserve au comptoir ne les
+	 * donne pas. Une valeur vide est enregistrée comme absente.
 	 */
 	public void update(String firstName, String lastName, String email, String phone) {
 		this.firstName = firstName.trim();

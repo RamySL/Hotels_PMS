@@ -108,13 +108,11 @@ class AuthControllerIntegrationTest {
 
 	// La 3e colonne ne sert qu'à nommer le cas dans les rapports de test
 	@ParameterizedTest(name = "{2}")
-	@CsvSource({
-			"claire.martin@pms.local,  mauvais-mot-de-passe, mot de passe faux",
+	@CsvSource({ "claire.martin@pms.local,  mauvais-mot-de-passe, mot de passe faux",
 			"inconnu@pms.local,        " + PASSWORD + ", email inconnu",
 			"ancien.employe@pms.local, " + PASSWORD + ", compte désactivé" })
 	void failedLoginDoesNotRevealTheReason(String email, String password, String scenario) {
-		assertThat(login(email, password))
-			.hasStatus(HttpStatus.UNAUTHORIZED)
+		assertThat(login(email, password)).hasStatus(HttpStatus.UNAUTHORIZED)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.bodyJson()
 			.isLenientlyEqualTo("""
@@ -124,8 +122,8 @@ class AuthControllerIntegrationTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "{\"email\": \"pas-un-email\", \"password\": \"x\"}",
-			"{\"email\": \"claire.martin@pms.local\"}",
-			"{\"email\": \"claire.martin@pms.local\", \"password\": \" \"}", "{\"email\": " })
+			"{\"email\": \"claire.martin@pms.local\"}", "{\"email\": \"claire.martin@pms.local\", \"password\": \" \"}",
+			"{\"email\": " })
 	void invalidPayloadIsRejected(String body) {
 		assertThat(mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
 			.hasStatus(HttpStatus.BAD_REQUEST)
@@ -133,13 +131,9 @@ class AuthControllerIntegrationTest {
 	}
 
 	private MvcTestResult login(String email, String password) {
-		return mvc.post()
-			.uri("/api/auth/login")
-			.contentType(MediaType.APPLICATION_JSON)
-			.content("""
-					{"email": "%s", "password": "%s"}
-					""".formatted(email, password))
-			.exchange();
+		return mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+				{"email": "%s", "password": "%s"}
+				""".formatted(email, password)).exchange();
 	}
 
 }

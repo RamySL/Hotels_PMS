@@ -51,11 +51,9 @@ class RoomControllerTest {
 	void receptionistListsRoomsWithTheirType() {
 		when(roomService.findAll(null)).thenReturn(List.of(room101(RoomStatus.READY)));
 
-		assertThat(mvc.get().uri("/api/rooms").with(receptionist())).hasStatusOk()
-			.bodyJson()
-			.isLenientlyEqualTo("""
-					[{"roomNumber": "101", "floor": 1, "status": "READY", "roomType": {"name": "Double"}}]
-					""");
+		assertThat(mvc.get().uri("/api/rooms").with(receptionist())).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+				[{"roomNumber": "101", "floor": 1, "status": "READY", "roomType": {"name": "Double"}}]
+				""");
 	}
 
 	@Test
@@ -76,7 +74,8 @@ class RoomControllerTest {
 		RoomResponse created = room101(RoomStatus.READY);
 		when(roomService.create(any())).thenReturn(created);
 
-		assertThat(mvc.post().uri("/api/rooms").with(admin()).contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
+		assertThat(
+				mvc.post().uri("/api/rooms").with(admin()).contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
 			.hasStatus(HttpStatus.CREATED)
 			.hasHeader(HttpHeaders.LOCATION, "http://localhost/api/rooms/" + created.id());
 	}
@@ -100,8 +99,7 @@ class RoomControllerTest {
 	void invalidRoomIsRejectedFieldByField() {
 		assertThat(mvc.post().uri("/api/rooms").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
 				{"roomNumber": "", "floor": -1}
-				"""))
-			.hasStatus(HttpStatus.BAD_REQUEST)
+				""")).hasStatus(HttpStatus.BAD_REQUEST)
 			.bodyJson()
 			.extractingPath("$.errors")
 			.asMap()

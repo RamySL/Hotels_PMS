@@ -53,8 +53,7 @@ class InvoiceControllerTest {
 		UUID reservationId = UUID.randomUUID();
 		when(invoiceService.search(eq(reservationId), isNull(), any())).thenReturn(Page.empty());
 
-		assertThat(mvc.get().uri("/api/invoices?reservationId={id}", reservationId).with(receptionist()))
-			.hasStatusOk();
+		assertThat(mvc.get().uri("/api/invoices?reservationId={id}", reservationId).with(receptionist())).hasStatusOk();
 		verify(invoiceService).search(eq(reservationId), isNull(), any());
 	}
 
@@ -123,9 +122,8 @@ class InvoiceControllerTest {
 
 	private static InvoiceResponse sample(UUID id, InvoiceStatus status) {
 		return new InvoiceResponse(id, status, new BigDecimal("179.80"), new BigDecimal("0.00"),
-				new BigDecimal("179.80"), Instant.EPOCH,
-				new InvoiceResponse.ReservationSummary(UUID.randomUUID(), LocalDate.of(2026, 10, 10),
-						LocalDate.of(2026, 10, 12), "Jean Dupont", "101"),
+				new BigDecimal("179.80"), Instant.EPOCH, new InvoiceResponse.ReservationSummary(UUID.randomUUID(),
+						LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 12), "Jean Dupont", "101"),
 				List.of());
 	}
 

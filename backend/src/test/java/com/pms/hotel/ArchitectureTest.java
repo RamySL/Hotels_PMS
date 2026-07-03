@@ -16,9 +16,9 @@ class ArchitectureTest {
 		.importPackages("com.pms.hotel");
 
 	/**
-	 * Un package par feature (ADR-001), sans dépendance cyclique entre eux : quand un package a
-	 * besoin d'un autre qui dépend déjà de lui, il définit une interface que l'autre implémente
-	 * (ADR-007).
+	 * Un package par feature (ADR-001), sans dépendance cyclique entre eux : quand un
+	 * package a besoin d'un autre qui dépend déjà de lui, il définit une interface que
+	 * l'autre implémente (ADR-007).
 	 */
 	@Test
 	void featurePackagesHaveNoCyclicDependencies() {

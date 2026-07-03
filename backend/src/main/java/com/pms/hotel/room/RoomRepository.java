@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
 
-	// Les listes affichent le type de chaque chambre : on le charge dans la même requête (jointure)
-	// plutôt qu'une requête par chambre (N+1)
+	// Les listes affichent le type de chaque chambre : on le charge dans la même
+	// requête (jointure) plutôt qu'une requête par chambre (N+1)
 	@EntityGraph(attributePaths = "roomType")
 	List<Room> findAllByOrderByFloorAscRoomNumberAsc();
 

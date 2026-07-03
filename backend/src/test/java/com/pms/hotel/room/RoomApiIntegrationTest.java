@@ -20,9 +20,10 @@ import com.pms.hotel.TestDatabase;
 import com.pms.hotel.TestcontainersConfiguration;
 
 /**
- * Parcours complet des chambres sur un vrai PostgreSQL. Volontairement sans @Transactional :
- * chaque requête s'exécute dans ses propres transactions, comme en production, ce qui fait
- * apparaître les problèmes de chargement paresseux qu'une transaction de test masquerait.
+ * Parcours complet des chambres sur un vrai PostgreSQL. Volontairement
+ * sans @Transactional : chaque requête s'exécute dans ses propres transactions, comme en
+ * production, ce qui fait apparaître les problèmes de chargement paresseux qu'une
+ * transaction de test masquerait.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,16 +43,22 @@ class RoomApiIntegrationTest {
 
 	@Test
 	void roomLifecycleThroughTheApi() {
-		String typeId = createdId(mvc.post().uri("/api/room-types").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
-				{"name": "Double", "basePrice": 89.90, "capacity": 2}
-				"""));
-		String roomId = createdId(mvc.post().uri("/api/rooms").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
-				{"roomTypeId": "%s", "roomNumber": "101", "floor": 1}
-				""".formatted(typeId)));
+		String typeId = createdId(
+				mvc.post().uri("/api/room-types").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
+						{"name": "Double", "basePrice": 89.90, "capacity": 2}
+						"""));
+		String roomId = createdId(
+				mvc.post().uri("/api/rooms").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
+						{"roomTypeId": "%s", "roomNumber": "101", "floor": 1}
+						""".formatted(typeId)));
 
-		assertThat(mvc.get().uri("/api/rooms").with(receptionist())).hasStatusOk().bodyJson().isLenientlyEqualTo("""
-				[{"id": "%s", "roomNumber": "101", "status": "READY", "roomType": {"name": "Double", "basePrice": 89.90}}]
-				""".formatted(roomId));
+		assertThat(mvc.get().uri("/api/rooms").with(receptionist())).hasStatusOk()
+			.bodyJson()
+			.isLenientlyEqualTo(
+					"""
+							[{"id": "%s", "roomNumber": "101", "status": "READY", "roomType": {"name": "Double", "basePrice": 89.90}}]
+							"""
+						.formatted(roomId));
 
 		assertThat(changeStatus(roomId, "CLEANING")).hasStatusOk();
 		assertThat(mvc.get().uri("/api/rooms?status=CLEANING").with(receptionist())).hasStatusOk()
@@ -65,15 +72,17 @@ class RoomApiIntegrationTest {
 
 	@Test
 	void occupiedRoomStatusCannotBeChangedManually() {
-		// Aucun cas d'usage ne rend encore une chambre OCCUPIED (check-in en phase 5) : insertion directe
+		// Aucun cas d'usage ne rend encore une chambre OCCUPIED (check-in en
+		// phase 5) : insertion directe
 		jdbcTemplate.update("""
 				INSERT INTO room_types (id, name, base_price, capacity)
 				VALUES ('0b5ae5de-0000-4000-8000-000000000001', 'Suite', 150.00, 2)
 				""");
-		jdbcTemplate.update("""
-				INSERT INTO rooms (id, room_type_id, room_number, floor, status)
-				VALUES ('0b5ae5de-0000-4000-8000-000000000002', '0b5ae5de-0000-4000-8000-000000000001', '301', 3, 'OCCUPIED')
-				""");
+		jdbcTemplate
+			.update("""
+					INSERT INTO rooms (id, room_type_id, room_number, floor, status)
+					VALUES ('0b5ae5de-0000-4000-8000-000000000002', '0b5ae5de-0000-4000-8000-000000000001', '301', 3, 'OCCUPIED')
+					""");
 
 		assertThat(changeStatus("0b5ae5de-0000-4000-8000-000000000002", "READY")).hasStatus(HttpStatus.CONFLICT)
 			.bodyJson()

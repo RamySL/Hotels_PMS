@@ -27,8 +27,8 @@ import com.pms.hotel.user.User;
 import com.pms.hotel.user.UserRepository;
 
 /**
- * Contrainte d'exclusion ex_reservations_no_overlap (ADR-006) et requêtes des réservations,
- * testées directement en base.
+ * Contrainte d'exclusion ex_reservations_no_overlap (ADR-006) et requêtes des
+ * réservations, testées directement en base.
  */
 @DataJpaTest
 @Import(TestcontainersConfiguration.class)

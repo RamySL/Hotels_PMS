@@ -27,7 +27,10 @@ import com.pms.hotel.user.UserRepository;
 @Service
 public class InvoiceService implements ReservationBilling {
 
-	/** Factures les plus récentes d'abord ; l'id départage pour que les pages restent stables. */
+	/**
+	 * Factures les plus récentes d'abord ; l'id départage pour que les pages restent
+	 * stables.
+	 */
 	private static final Sort SORT = Sort.by(Sort.Order.desc("issuedAt"), Sort.Order.asc("id"));
 
 	private final InvoiceRepository invoiceRepository;
@@ -62,7 +65,9 @@ public class InvoiceService implements ReservationBilling {
 		findByReservation(reservation).cancel();
 	}
 
-	/** Refuse (409) le check-out tant que la facture de la réservation n'est pas soldée. */
+	/**
+	 * Refuse (409) le check-out tant que la facture de la réservation n'est pas soldée.
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public void ensureSettled(Reservation reservation) {
@@ -70,8 +75,9 @@ public class InvoiceService implements ReservationBilling {
 	}
 
 	/**
-	 * Le flush envoie le paiement en base avant de construire la réponse : il reçoit ainsi son
-	 * id, et un encaissement concurrent est détecté ici (@Version) plutôt qu'au commit.
+	 * Le flush envoie le paiement en base avant de construire la réponse : il reçoit
+	 * ainsi son id, et un encaissement concurrent est détecté ici (@Version) plutôt qu'au
+	 * commit.
 	 */
 	@Transactional
 	public InvoiceResponse recordPayment(UUID invoiceId, PaymentRequest request, UUID userId) {
@@ -85,8 +91,8 @@ public class InvoiceService implements ReservationBilling {
 
 	@Transactional(readOnly = true)
 	public InvoiceResponse findById(UUID id) {
-		return InvoiceResponse.from(
-				invoiceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Facture", id)));
+		return InvoiceResponse
+			.from(invoiceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Facture", id)));
 	}
 
 	/** Factures filtrées par réservation et par statut ; chaque filtre est facultatif. */

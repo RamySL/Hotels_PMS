@@ -51,7 +51,9 @@ public class RoomController {
 		return roomService.update(id, request);
 	}
 
-	/** Ouvert aux deux rôles : la réception remet une chambre en service après le ménage. */
+	/**
+	 * Ouvert aux deux rôles : la réception remet une chambre en service après le ménage.
+	 */
 	@PatchMapping("/{id}/status")
 	public RoomResponse changeStatus(@PathVariable UUID id, @Valid @RequestBody RoomStatusRequest request) {
 		return roomService.changeStatus(id, request.status());

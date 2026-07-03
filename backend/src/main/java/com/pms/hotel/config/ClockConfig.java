@@ -11,8 +11,9 @@ import org.springframework.context.annotation.Configuration;
 public class ClockConfig {
 
 	/**
-	 * Horloge sur le fuseau de l'hôtel : les règles de date (arrivée, check-in) portent sur sa
-	 * journée. L'injecter, plutôt qu'appeler LocalDate.now(), rend aussi ces règles testables.
+	 * Horloge sur le fuseau de l'hôtel : les règles de date (arrivée, check-in) portent
+	 * sur sa journée. L'injecter, plutôt qu'appeler LocalDate.now(), rend aussi ces
+	 * règles testables.
 	 */
 	@Bean
 	Clock clock(@Value("${pms.time-zone}") String timeZone) {

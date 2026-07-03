@@ -54,7 +54,8 @@ class DashboardServiceTest {
 
 	@Test
 	void theDayIsTheHotelDayEvenJustAfterMidnight() {
-		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée du 15 a commencé à l'hôtel
+		// 23h30 UTC le 14 janvier = 0h30 à Paris le 15 : la journée du 15 a
+		// commencé à l'hôtel
 		DashboardService service = serviceAt(Instant.parse("2030-01-14T23:30:00Z"));
 
 		assertThat(service.today().date()).isEqualTo(JANUARY_15);
@@ -75,8 +76,7 @@ class DashboardServiceTest {
 	void occupancyIsTheShareOfRoomsInServiceSoldTonight() {
 		when(roomRepository.countByStatusNot(RoomStatus.OUT_OF_SERVICE)).thenReturn(3L);
 		Room freeRoom = new Room(new RoomType("Double", null, new BigDecimal("89.90"), 2), "103", 1);
-		when(availabilityService.findAvailableRooms(JANUARY_15, JANUARY_15.plusDays(1)))
-			.thenReturn(List.of(freeRoom));
+		when(availabilityService.findAvailableRooms(JANUARY_15, JANUARY_15.plusDays(1))).thenReturn(List.of(freeRoom));
 
 		Occupancy occupancy = serviceAt(JANUARY_15_AT_10).today().occupancy();
 

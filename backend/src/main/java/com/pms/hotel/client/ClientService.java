@@ -14,7 +14,10 @@ import com.pms.hotel.common.ResourceNotFoundException;
 @Service
 public class ClientService {
 
-	/** Ordre alphabétique ; l'id départage les homonymes pour que les pages restent stables. */
+	/**
+	 * Ordre alphabétique ; l'id départage les homonymes pour que les pages restent
+	 * stables.
+	 */
 	private static final Sort SORT = Sort.by("lastName", "firstName", "id");
 
 	private final ClientRepository clientRepository;
@@ -23,7 +26,9 @@ public class ClientService {
 		this.clientRepository = clientRepository;
 	}
 
-	/** Le tri demandé par le client est ignoré : seul l'ordre alphabétique est proposé. */
+	/**
+	 * Le tri demandé par le client est ignoré : seul l'ordre alphabétique est proposé.
+	 */
 	@Transactional(readOnly = true)
 	public Page<ClientResponse> search(String term, Pageable pageable) {
 		PageRequest page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), SORT);

@@ -28,7 +28,10 @@ import com.pms.hotel.user.UserRepository;
 @Service
 public class ReservationService {
 
-	/** Arrivées les plus proches d'abord ; l'id départage pour que les pages restent stables. */
+	/**
+	 * Arrivées les plus proches d'abord ; l'id départage pour que les pages restent
+	 * stables.
+	 */
 	private static final Sort SORT = Sort.by("checkInDate", "id");
 
 	private final ReservationRepository reservationRepository;
@@ -57,10 +60,12 @@ public class ReservationService {
 		this.clock = clock;
 	}
 
-	/** Réservations qui chevauchent [from, to), au statut donné ; chaque filtre est facultatif. */
+	/**
+	 * Réservations qui chevauchent [from, to), au statut donné ; chaque filtre est
+	 * facultatif.
+	 */
 	@Transactional(readOnly = true)
-	public Page<ReservationResponse> search(LocalDate from, LocalDate to, ReservationStatus status,
-			Pageable pageable) {
+	public Page<ReservationResponse> search(LocalDate from, LocalDate to, ReservationStatus status, Pageable pageable) {
 		PageRequest page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), SORT);
 		return reservationRepository.findAll(Specification.allOf(overlapping(from, to), withStatus(status)), page)
 			.map(ReservationResponse::from);
@@ -87,8 +92,9 @@ public class ReservationService {
 	}
 
 	/**
-	 * Les règles liées au statut passent avant le contrôle de disponibilité, et la réservation
-	 * n'est modifiée qu'après : ce contrôle ne doit pas voir une modification encore en attente.
+	 * Les règles liées au statut passent avant le contrôle de disponibilité, et la
+	 * réservation n'est modifiée qu'après : ce contrôle ne doit pas voir une modification
+	 * encore en attente.
 	 */
 	@Transactional
 	public ReservationResponse update(UUID id, ReservationRequest request) {
@@ -138,8 +144,9 @@ public class ReservationService {
 	}
 
 	/**
-	 * Filet de sécurité (ADR-006) : si deux réservations simultanées ont passé le contrôle,
-	 * la contrainte ex_reservations_no_overlap refuse la seconde ; on renvoie alors le même 409.
+	 * Filet de sécurité (ADR-006) : si deux réservations simultanées ont passé le
+	 * contrôle, la contrainte ex_reservations_no_overlap refuse la seconde ; on renvoie
+	 * alors le même 409.
 	 */
 	private void flushOrRefuseOverlap(Room room) {
 		try {
@@ -155,8 +162,7 @@ public class ReservationService {
 	}
 
 	private Reservation findReservation(UUID id) {
-		return reservationRepository.findById(id)
-			.orElseThrow(() -> new ResourceNotFoundException("Réservation", id));
+		return reservationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Réservation", id));
 	}
 
 	private Room findRoom(UUID id) {

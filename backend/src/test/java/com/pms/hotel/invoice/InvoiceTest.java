@@ -23,8 +23,7 @@ class InvoiceTest {
 
 	private static final LocalDate ARRIVAL = LocalDate.of(2026, 10, 10);
 
-	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard",
-			Role.RECEPTIONIST);
+	private final User receptionist = new User("reception@pms.local", "hash", "Lucas", "Bernard", Role.RECEPTIONIST);
 
 	private final Invoice invoice = new Invoice(twoNightsInADouble(), Instant.EPOCH);
 

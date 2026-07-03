@@ -12,7 +12,10 @@ import java.util.stream.Stream;
  */
 final class ClientSearch {
 
-	/** Au moins un chiffre, et rien d'autre que des chiffres ou des séparateurs de téléphone. */
+	/**
+	 * Au moins un chiffre, et rien d'autre que des chiffres ou des séparateurs de
+	 * téléphone.
+	 */
 	private static final Pattern PHONE_LIKE = Pattern.compile("[0-9 .+()-]*[0-9][0-9 .+()-]*");
 
 	private static final Pattern DIACRITICS = Pattern.compile("\\p{M}");
@@ -26,8 +29,9 @@ final class ClientSearch {
 
 	/** Texte stocké dans search_text. */
 	static String searchText(String firstName, String lastName, String email, String phone) {
-		return Stream.of(normalize(firstName), normalize(lastName), email == null ? "" : normalize(email),
-				phone == null ? "" : digits(phone))
+		return Stream
+			.of(normalize(firstName), normalize(lastName), email == null ? "" : normalize(email),
+					phone == null ? "" : digits(phone))
 			.filter(part -> !part.isEmpty())
 			.collect(Collectors.joining(" "));
 	}

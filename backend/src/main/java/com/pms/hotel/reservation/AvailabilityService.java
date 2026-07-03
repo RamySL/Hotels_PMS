@@ -21,8 +21,9 @@ import com.pms.hotel.room.RoomRepository;
 import com.pms.hotel.room.RoomStatus;
 
 /**
- * Disponibilité des chambres. La contrainte ex_reservations_no_overlap garantit en base qu'il
- * n'y a jamais de double réservation ; ce service vérifie avant, pour un message clair.
+ * Disponibilité des chambres. La contrainte ex_reservations_no_overlap garantit en base
+ * qu'il n'y a jamais de double réservation ; ce service vérifie avant, pour un message
+ * clair.
  */
 @Service
 public class AvailabilityService {
@@ -37,8 +38,9 @@ public class AvailabilityService {
 	}
 
 	/**
-	 * Refuse (409) une chambre hors service ou déjà réservée sur la période. reservationId : la
-	 * réservation modifiée, qui ne doit pas entrer en conflit avec elle-même (null à la création).
+	 * Refuse (409) une chambre hors service ou déjà réservée sur la période.
+	 * reservationId : la réservation modifiée, qui ne doit pas entrer en conflit avec
+	 * elle-même (null à la création).
 	 */
 	@Transactional(readOnly = true)
 	public void ensureBookable(Room room, LocalDate checkIn, LocalDate checkOut, UUID reservationId) {
@@ -60,7 +62,10 @@ public class AvailabilityService {
 			.toList();
 	}
 
-	/** Chambres libres sur la période, sans les chambres hors service, par étage puis numéro. */
+	/**
+	 * Chambres libres sur la période, sans les chambres hors service, par étage puis
+	 * numéro.
+	 */
 	@Transactional(readOnly = true)
 	public List<Room> findAvailableRooms(LocalDate checkIn, LocalDate checkOut) {
 		Set<UUID> bookedRoomIds = reservationRepository

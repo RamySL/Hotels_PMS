@@ -59,8 +59,7 @@ class SecurityConfigTest {
 
 	@Test
 	void requestWithoutTokenIsRejected() {
-		assertThat(mvc.get().uri("/api/test/whoami"))
-			.hasStatus(HttpStatus.UNAUTHORIZED)
+		assertThat(mvc.get().uri("/api/test/whoami")).hasStatus(HttpStatus.UNAUTHORIZED)
 			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
 			.hasHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer")
 			.bodyJson()

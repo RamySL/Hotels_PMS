@@ -29,8 +29,8 @@ import com.pms.hotel.room.RoomTypeRepository;
 import com.pms.hotel.user.UserRepository;
 
 /**
- * Cas limites de la disponibilité, sur une vraie base : la logique est dans les requêtes. La
- * chambre 101 est réservée du 10 au 14.
+ * Cas limites de la disponibilité, sur une vraie base : la logique est dans les requêtes.
+ * La chambre 101 est réservée du 10 au 14.
  */
 @DataJpaTest
 @Import({ TestcontainersConfiguration.class, AvailabilityService.class })

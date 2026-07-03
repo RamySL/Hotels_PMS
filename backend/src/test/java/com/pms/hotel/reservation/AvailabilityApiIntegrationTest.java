@@ -31,8 +31,8 @@ import com.pms.hotel.room.RoomTypeRepository;
 import com.pms.hotel.user.UserRepository;
 
 /**
- * Disponibilité sur un vrai PostgreSQL, sans @Transactional (§6.3) : la 101 est réservée de J+1
- * à J+3, la 102 est libre, la 103 est hors service.
+ * Disponibilité sur un vrai PostgreSQL, sans @Transactional (§6.3) : la 101 est réservée
+ * de J+1 à J+3, la 102 est libre, la 103 est hors service.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

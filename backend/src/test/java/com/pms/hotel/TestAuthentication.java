@@ -8,8 +8,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /**
- * Requêtes MockMvc authentifiées par JWT, avec l'autorité que SecurityConfig déduit du claim
- * « role ». Le sub est l'id d'un compte de démo du seed V2, qui existe donc en base.
+ * Requêtes MockMvc authentifiées par JWT, avec l'autorité que SecurityConfig déduit du
+ * claim « role ». Le sub est l'id d'un compte de démo du seed V2, qui existe donc en
+ * base.
  */
 public final class TestAuthentication {
 

@@ -61,8 +61,11 @@ class RoomTypeControllerTest {
 		RoomTypeResponse created = suite();
 		when(roomTypeService.create(any())).thenReturn(created);
 
-		assertThat(mvc.post().uri("/api/room-types").with(admin()).contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
-			.hasStatus(HttpStatus.CREATED)
+		assertThat(mvc.post()
+			.uri("/api/room-types")
+			.with(admin())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(VALID_BODY)).hasStatus(HttpStatus.CREATED)
 			.hasHeader(HttpHeaders.LOCATION, "http://localhost/api/room-types/" + created.id())
 			.bodyJson()
 			.extractingPath("$.id")
@@ -88,8 +91,7 @@ class RoomTypeControllerTest {
 	void invalidRoomTypeIsRejectedFieldByField() {
 		assertThat(mvc.post().uri("/api/room-types").with(admin()).contentType(MediaType.APPLICATION_JSON).content("""
 				{"name": " ", "basePrice": 12.345, "capacity": 0}
-				"""))
-			.hasStatus(HttpStatus.BAD_REQUEST)
+				""")).hasStatus(HttpStatus.BAD_REQUEST)
 			.bodyJson()
 			.extractingPath("$.errors")
 			.asMap()
@@ -102,8 +104,11 @@ class RoomTypeControllerTest {
 		when(roomTypeService.create(any()))
 			.thenThrow(new BusinessRuleException("Un type de chambre nommé « Suite » existe déjà"));
 
-		assertThat(mvc.post().uri("/api/room-types").with(admin()).contentType(MediaType.APPLICATION_JSON).content(VALID_BODY))
-			.hasStatus(HttpStatus.CONFLICT);
+		assertThat(mvc.post()
+			.uri("/api/room-types")
+			.with(admin())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(VALID_BODY)).hasStatus(HttpStatus.CONFLICT);
 	}
 
 	@Test

@@ -19,11 +19,7 @@ class PingControllerTest {
 
 	@Test
 	void pingReturnsUp() {
-		assertThat(mvc.get().uri("/api/ping"))
-			.hasStatusOk()
-			.bodyJson()
-			.extractingPath("$.status")
-			.isEqualTo("UP");
+		assertThat(mvc.get().uri("/api/ping")).hasStatusOk().bodyJson().extractingPath("$.status").isEqualTo("UP");
 	}
 
 }

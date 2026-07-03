@@ -29,7 +29,10 @@ public class ClientController {
 		this.clientService = clientService;
 	}
 
-	/** PagedModel : format JSON de page stable, {content, page: {size, number, totalElements, totalPages}}. */
+	/**
+	 * PagedModel : format JSON de page stable, {content, page: {size, number,
+	 * totalElements, totalPages}}.
+	 */
 	@GetMapping
 	public PagedModel<ClientResponse> search(@RequestParam(required = false) String search,
 			@PageableDefault(size = 20) Pageable pageable) {

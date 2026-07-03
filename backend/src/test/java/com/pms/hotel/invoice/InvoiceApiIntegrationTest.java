@@ -30,7 +30,10 @@ import com.pms.hotel.room.RoomRepository;
 import com.pms.hotel.room.RoomType;
 import com.pms.hotel.room.RoomTypeRepository;
 
-/** Facture créée et tenue à jour par les réservations, sur un vrai PostgreSQL et sans @Transactional (§6.3). */
+/**
+ * Facture créée et tenue à jour par les réservations, sur un vrai PostgreSQL et
+ * sans @Transactional (§6.3).
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -96,17 +99,14 @@ class InvoiceApiIntegrationTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(body(today.plusDays(1), today.plusDays(4)))).hasStatusOk();
 
-		assertThat(invoicesOf(reservationId)).bodyJson()
-			.extractingPath("$.content[0].amountTotal")
-			.isEqualTo(269.70);
+		assertThat(invoicesOf(reservationId)).bodyJson().extractingPath("$.content[0].amountTotal").isEqualTo(269.70);
 	}
 
 	@Test
 	void cancellingTheReservationCancelsItsInvoice() throws Exception {
 		String reservationId = book(today.plusDays(1), today.plusDays(3));
 
-		assertThat(mvc.patch().uri("/api/reservations/{id}/cancel", reservationId).with(receptionist()))
-			.hasStatusOk();
+		assertThat(mvc.patch().uri("/api/reservations/{id}/cancel", reservationId).with(receptionist())).hasStatusOk();
 
 		assertThat(mvc.get().uri("/api/invoices?status=CANCELLED").with(receptionist())).bodyJson()
 			.isLenientlyEqualTo("""
