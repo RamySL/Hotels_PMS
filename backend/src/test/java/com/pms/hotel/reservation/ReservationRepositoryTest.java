@@ -1,5 +1,6 @@
 package com.pms.hotel.reservation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -25,7 +26,10 @@ import com.pms.hotel.room.RoomTypeRepository;
 import com.pms.hotel.user.User;
 import com.pms.hotel.user.UserRepository;
 
-/** Contrainte d'exclusion ex_reservations_no_overlap (ADR-006), testée directement en base. */
+/**
+ * Contrainte d'exclusion ex_reservations_no_overlap (ADR-006) et requêtes des réservations,
+ * testées directement en base.
+ */
 @DataJpaTest
 @Import(TestcontainersConfiguration.class)
 class ReservationRepositoryTest {
@@ -95,6 +99,44 @@ class ReservationRepositoryTest {
 		jdbcTemplate.update("UPDATE reservations SET status = 'CANCELLED' WHERE id = ?", cancelled.getId());
 
 		assertThatCode(() -> book(room101, DAY_10.plusDays(1), DAY_10.plusDays(2))).doesNotThrowAnyException();
+	}
+
+	@Test
+	void expectedArrivalsAreConfirmedStaysThatCanStillCheckIn() {
+		Reservation arrivingToday = book(room("201", 2), DAY_10, DAY_10.plusDays(2));
+		Reservation lateButStillExpected = book(room("102", 1), DAY_10.minusDays(1), DAY_10.plusDays(1));
+		// Séjour fini sans que le client soit venu : le check-in n'est plus possible
+		book(room("103", 1), DAY_10.minusDays(1), DAY_10);
+		book(room("104", 1), DAY_10.plusDays(1), DAY_10.plusDays(2));
+		book(room("105", 1), DAY_10, DAY_10.plusDays(2)).checkIn(DAY_10);
+		book(room("106", 1), DAY_10, DAY_10.plusDays(2)).cancel();
+
+		// Triées par étage puis numéro : la 102 avant la 201
+		assertThat(reservationRepository.findExpectedArrivals(DAY_10)).containsExactly(lateButStillExpected,
+				arrivingToday);
+	}
+
+	@Test
+	void expectedDeparturesAreGuestsStillInWhoseDepartureIsTodayOrPast() {
+		Reservation leavingToday = checkedIn(room("201", 2), DAY_10.minusDays(2), DAY_10);
+		Reservation forgottenYesterday = checkedIn(room("102", 1), DAY_10.minusDays(3), DAY_10.minusDays(1));
+		checkedIn(room("103", 1), DAY_10.minusDays(1), DAY_10.plusDays(1));
+		checkedIn(room("104", 1), DAY_10.minusDays(2), DAY_10).checkOut();
+		// Client jamais venu : ce n'est pas un départ
+		book(room("105", 1), DAY_10.minusDays(2), DAY_10);
+
+		assertThat(reservationRepository.findExpectedDepartures(DAY_10)).containsExactly(forgottenYesterday,
+				leavingToday);
+	}
+
+	private Room room(String roomNumber, int floor) {
+		return roomRepository.save(new Room(room101.getRoomType(), roomNumber, floor));
+	}
+
+	private Reservation checkedIn(Room room, LocalDate checkIn, LocalDate checkOut) {
+		Reservation stay = book(room, checkIn, checkOut);
+		stay.checkIn(checkIn);
+		return stay;
 	}
 
 	private Reservation book(Room room, LocalDate checkIn, LocalDate checkOut) {
