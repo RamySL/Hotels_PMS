@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+		"-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+		"https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+	Règles de qualité du code. La mise en page relève du formateur (Spring Java Format) :
+	aucune règle ici ne porte sur l'indentation, les espaces ou la longueur des lignes.
+-->
+<module name="Checker">
+	<property name="severity" value="error"/>
+
+	<module name="TreeWalker">
+		<!-- Imports -->
+		<module name="AvoidStarImport"/>
+		<module name="UnusedImports"/>
+		<module name="RedundantImport"/>
+
+		<!-- Code -->
+		<module name="EqualsHashCode"/>
+		<module name="StringLiteralEquality"/>
+		<module name="SimplifyBooleanExpression"/>
+		<module name="SimplifyBooleanReturn"/>
+		<module name="EmptyCatchBlock"/>
+		<module name="OneStatementPerLine"/>
+		<module name="MultipleVariableDeclarations"/>
+		<module name="NeedBraces"/>
+		<module name="ModifierOrder"/>
+
+		<!-- Conception -->
+		<module name="FinalClass"/>
+		<module name="HideUtilityClassConstructor">
+			<!-- La classe de démarrage n'a qu'un main statique, mais Spring doit l'instancier -->
+			<property name="ignoreAnnotatedBy" value="SpringBootApplication"/>
+		</module>
+
+		<!-- Nommage : conventions Java -->
+		<module name="TypeName"/>
+		<module name="MethodName"/>
+		<module name="ConstantName"/>
+		<module name="MemberName"/>
+		<module name="ParameterName"/>
+		<module name="LocalVariableName"/>
+	</module>
+</module>
