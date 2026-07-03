@@ -33,6 +33,7 @@ import com.pms.hotel.reservation.Reservation;
 import com.pms.hotel.reservation.ReservationRepository;
 import com.pms.hotel.room.Room;
 import com.pms.hotel.room.RoomRepository;
+import com.pms.hotel.room.RoomStatus;
 import com.pms.hotel.room.RoomType;
 import com.pms.hotel.room.RoomTypeRepository;
 import com.pms.hotel.user.User;
@@ -125,12 +126,54 @@ class DashboardApiIntegrationTest {
 		assertThat(dashboard()).bodyJson().extractingPath("$.departures").asArray().isEmpty();
 	}
 
+	@Test
+	void occupancyCountsTheNightsSoldTonightAmongRoomsInService() throws Exception {
+		book(room("101"), today, today.plusDays(2));
+		// Le client de la 102 part aujourd'hui : la nuit de ce soir n'est pas vendue
+		stayCheckedIn(room("102"), today.minusDays(1), today);
+		room("103");
+		roomOutOfService("104");
+
+		assertThat(dashboard()).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+				{"occupancy": {"occupiedRooms": 1, "roomsInService": 3, "rate": 33.3}}
+				""");
+	}
+
+	@Test
+	void checkedOutRoomIsToCleanUntilItIsReadyAgain() throws Exception {
+		Room room103 = room("103");
+		String leavingToday = stayCheckedIn(room103, today.minusDays(1), today);
+		pay(leavingToday, "89.90");
+		assertThat(mvc.patch().uri("/api/reservations/{id}/check-out", leavingToday).with(receptionist()))
+			.hasStatusOk();
+
+		assertThat(dashboard()).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+				{"roomsToClean": [{"roomNumber": "103", "status": "CLEANING"}]}
+				""");
+
+		assertThat(mvc.patch()
+			.uri("/api/rooms/{id}/status", room103.getId())
+			.with(receptionist())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{"status": "READY"}
+					""")).hasStatusOk();
+
+		assertThat(dashboard()).bodyJson().extractingPath("$.roomsToClean").asArray().isEmpty();
+	}
+
 	private MvcTestResult dashboard() {
 		return mvc.get().uri("/api/dashboard/today").with(receptionist()).exchange();
 	}
 
 	private Room room(String roomNumber) {
 		return roomRepository.save(new Room(doubleType, roomNumber, 1));
+	}
+
+	private void roomOutOfService(String roomNumber) {
+		Room room = new Room(doubleType, roomNumber, 1);
+		room.changeStatus(RoomStatus.OUT_OF_SERVICE);
+		roomRepository.save(room);
 	}
 
 	private String book(Room room, LocalDate checkIn, LocalDate checkOut) throws Exception {

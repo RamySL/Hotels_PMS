@@ -18,6 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.pms.hotel.config.SecurityConfig;
+import com.pms.hotel.dashboard.DashboardResponse.Occupancy;
 import com.pms.hotel.dashboard.DashboardResponse.Stay;
 
 @WebMvcTest(DashboardController.class)
@@ -38,10 +39,11 @@ class DashboardControllerTest {
 	}
 
 	@Test
-	void showsTheStaysOfTheDayWithWhatIsLeftToPay() {
+	void showsTheDayWithWhatIsLeftToPayAndTheOccupancy() {
 		Stay arrival = new Stay(UUID.randomUUID(), "Jean Dupont", "101", TODAY, TODAY.plusDays(2), 2,
 				new BigDecimal("129.80"));
-		when(dashboardService.today()).thenReturn(new DashboardResponse(TODAY, List.of(arrival), List.of()));
+		when(dashboardService.today()).thenReturn(new DashboardResponse(TODAY, List.of(arrival), List.of(),
+				new Occupancy(2, 3, new BigDecimal("66.7")), List.of()));
 
 		assertThat(mvc.get().uri("/api/dashboard/today").with(receptionist())).hasStatusOk()
 			.bodyJson()
@@ -50,7 +52,9 @@ class DashboardControllerTest {
 					 "arrivals": [{"reservationId": "%s", "clientName": "Jean Dupont", "roomNumber": "101",
 					               "checkInDate": "2026-10-10", "checkOutDate": "2026-10-12",
 					               "numberOfGuests": 2, "balance": 129.80}],
-					 "departures": []}
+					 "departures": [],
+					 "occupancy": {"occupiedRooms": 2, "roomsInService": 3, "rate": 66.7},
+					 "roomsToClean": []}
 					""".formatted(arrival.reservationId()));
 	}
 

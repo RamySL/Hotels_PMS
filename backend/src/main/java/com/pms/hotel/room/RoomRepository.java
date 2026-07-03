@@ -20,4 +20,6 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
 
 	boolean existsByRoomNumberAndIdNot(String roomNumber, UUID id);
 
+	long countByStatusNot(RoomStatus status);
+
 }

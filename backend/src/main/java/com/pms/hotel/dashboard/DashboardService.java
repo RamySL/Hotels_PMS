@@ -12,15 +12,20 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.pms.hotel.dashboard.DashboardResponse.Occupancy;
 import com.pms.hotel.dashboard.DashboardResponse.Stay;
 import com.pms.hotel.invoice.Invoice;
 import com.pms.hotel.invoice.InvoiceRepository;
+import com.pms.hotel.reservation.AvailabilityService;
 import com.pms.hotel.reservation.Reservation;
 import com.pms.hotel.reservation.ReservationRepository;
+import com.pms.hotel.room.RoomRepository;
+import com.pms.hotel.room.RoomService;
+import com.pms.hotel.room.RoomStatus;
 
 /**
- * Tableau de bord du jour : ce que la réception a encore à faire. Il ne définit aucune règle : il
- * rassemble celles des réservations et de la facturation.
+ * Tableau de bord du jour : ce que la réception a encore à faire et l'état de l'hôtel. Il ne
+ * définit aucune règle : il rassemble celles des réservations, de la facturation et des chambres.
  */
 @Service
 public class DashboardService {
@@ -29,12 +34,22 @@ public class DashboardService {
 
 	private final InvoiceRepository invoiceRepository;
 
+	private final RoomRepository roomRepository;
+
+	private final AvailabilityService availabilityService;
+
+	private final RoomService roomService;
+
 	private final Clock clock;
 
 	public DashboardService(ReservationRepository reservationRepository, InvoiceRepository invoiceRepository,
+			RoomRepository roomRepository, AvailabilityService availabilityService, RoomService roomService,
 			Clock clock) {
 		this.reservationRepository = reservationRepository;
 		this.invoiceRepository = invoiceRepository;
+		this.roomRepository = roomRepository;
+		this.availabilityService = availabilityService;
+		this.roomService = roomService;
 		this.clock = clock;
 	}
 
@@ -45,7 +60,18 @@ public class DashboardService {
 		List<Reservation> arrivals = reservationRepository.findExpectedArrivals(today);
 		List<Reservation> departures = reservationRepository.findExpectedDepartures(today);
 		Map<UUID, BigDecimal> balances = balancesOf(Stream.concat(arrivals.stream(), departures.stream()).toList());
-		return new DashboardResponse(today, stays(arrivals, balances), stays(departures, balances));
+		return new DashboardResponse(today, stays(arrivals, balances), stays(departures, balances), occupancy(today),
+				roomService.findAll(RoomStatus.CLEANING));
+	}
+
+	/**
+	 * Chambres en service vendues pour la nuit de ce soir : celles que la règle de disponibilité
+	 * ne propose plus sur [aujourd'hui, demain).
+	 */
+	private Occupancy occupancy(LocalDate today) {
+		long roomsInService = roomRepository.countByStatusNot(RoomStatus.OUT_OF_SERVICE);
+		long freeTonight = availabilityService.findAvailableRooms(today, today.plusDays(1)).size();
+		return Occupancy.of(roomsInService - freeTonight, roomsInService);
 	}
 
 	/** Reste à payer de chaque réservation : leurs factures sont lues en une seule requête. */
