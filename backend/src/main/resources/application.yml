@@ -31,6 +31,11 @@ spring:
       # Dates des paramètres d'URL en ISO (2026-10-10), indépendamment de la locale
       date: iso
 
+springdoc:
+  swagger-ui:
+    # Le jeton saisi dans « Authorize » survit au rechargement de la page
+    persist-authorization: true
+
 server:
   port: 8080
 

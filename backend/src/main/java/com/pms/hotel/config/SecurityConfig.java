@@ -46,6 +46,10 @@ public class SecurityConfig {
 				.permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/ping")
 				.permitAll()
+				// La documentation de l'API est publique ;
+				// les routes qu'elle décrit restent protégées
+				.requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+				.permitAll()
 				// Sans cela, une erreur 500 transmise à /error serait transformée en 401
 				.requestMatchers("/error")
 				.permitAll()

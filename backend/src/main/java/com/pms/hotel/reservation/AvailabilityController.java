@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
+@Tag(name = "Disponibilité")
 public class AvailabilityController {
 
 	private final AvailabilityService availabilityService;
@@ -23,6 +27,7 @@ public class AvailabilityController {
 	 * du séjour.
 	 */
 	@GetMapping("/api/rooms/availability")
+	@Operation(summary = "Chambres libres sur une période [checkIn, checkOut), avec le prix du séjour")
 	public List<AvailableRoomResponse> findAvailableRooms(@RequestParam LocalDate checkIn,
 			@RequestParam LocalDate checkOut) {
 		if (!checkOut.isAfter(checkIn)) {

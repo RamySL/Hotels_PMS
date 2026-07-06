@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/rooms")
+@Tag(name = "Chambres")
 public class RoomController {
 
 	private final RoomService roomService;
@@ -30,12 +33,14 @@ public class RoomController {
 	}
 
 	@GetMapping
+	@Operation(summary = "Lister les chambres, éventuellement filtrées par statut")
 	public List<RoomResponse> findAll(@RequestParam(required = false) RoomStatus status) {
 		return roomService.findAll(status);
 	}
 
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
+	@Operation(summary = "Créer une chambre (ADMIN)")
 	public ResponseEntity<RoomResponse> create(@Valid @RequestBody RoomRequest request) {
 		RoomResponse created = roomService.create(request);
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -47,6 +52,7 @@ public class RoomController {
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
+	@Operation(summary = "Modifier une chambre (ADMIN)")
 	public RoomResponse update(@PathVariable UUID id, @Valid @RequestBody RoomRequest request) {
 		return roomService.update(id, request);
 	}
@@ -55,6 +61,7 @@ public class RoomController {
 	 * Ouvert aux deux rôles : la réception remet une chambre en service après le ménage.
 	 */
 	@PatchMapping("/{id}/status")
+	@Operation(summary = "Changer le statut d'une chambre : READY, CLEANING ou OUT_OF_SERVICE")
 	public RoomResponse changeStatus(@PathVariable UUID id, @Valid @RequestBody RoomStatusRequest request) {
 		return roomService.changeStatus(id, request.status());
 	}

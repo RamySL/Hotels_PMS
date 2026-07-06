@@ -10,10 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pms.hotel.user.User;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentification")
 public class AuthController {
 
 	private final AuthenticationManager authenticationManager;
@@ -30,6 +34,8 @@ public class AuthController {
 	 * GlobalExceptionHandler.
 	 */
 	@PostMapping("/login")
+	@Operation(summary = "Se connecter : renvoie le jeton JWT à coller dans « Authorize »")
+	@SecurityRequirements
 	public LoginResponse login(@Valid @RequestBody LoginRequest request) {
 		Authentication authentication = authenticationManager
 			.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(request.email(), request.password()));

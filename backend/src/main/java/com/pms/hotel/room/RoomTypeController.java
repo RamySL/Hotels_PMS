@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/room-types")
+@Tag(name = "Types de chambre")
 public class RoomTypeController {
 
 	private final RoomTypeService roomTypeService;
@@ -28,12 +31,14 @@ public class RoomTypeController {
 	}
 
 	@GetMapping
+	@Operation(summary = "Lister les types de chambre")
 	public List<RoomTypeResponse> findAll() {
 		return roomTypeService.findAll();
 	}
 
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
+	@Operation(summary = "Créer un type de chambre (ADMIN)")
 	public ResponseEntity<RoomTypeResponse> create(@Valid @RequestBody RoomTypeRequest request) {
 		RoomTypeResponse created = roomTypeService.create(request);
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -45,6 +50,7 @@ public class RoomTypeController {
 
 	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
+	@Operation(summary = "Modifier un type de chambre (ADMIN)")
 	public RoomTypeResponse update(@PathVariable UUID id, @Valid @RequestBody RoomTypeRequest request) {
 		return roomTypeService.update(id, request);
 	}
