@@ -11,3 +11,4 @@ Chaque décision structurante du projet est décrite dans un fichier court : son
 | [0005](0005-validation-jwt-resource-server.md) | Validation des JWT par le Resource Server de Spring Security | Authentification |
 | [0006](0006-double-reservation-contrainte-exclusion.md) | Double réservation impossible, garantie par la base | Réservations |
 | [0007](0007-facturation-inversion-de-dependance.md) | Facturation découplée des réservations par inversion de dépendance | Facturation |
+| [0008](0008-jeton-front-localstorage.md) | Jeton de connexion conservé dans le localStorage du navigateur | Authentification (frontend) |

@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, ApiError, setTokenProvider } from "./apiClient";
+import {
+  api,
+  ApiError,
+  setTokenProvider,
+  setUnauthorizedHandler,
+} from "./apiClient";
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -18,9 +23,25 @@ afterEach(() => {
   fetchMock.mockReset();
   vi.unstubAllGlobals();
   setTokenProvider(() => null);
+  setUnauthorizedHandler(() => {});
 });
 
 describe("api", () => {
+  it("reports a refused token, but not a refused login", async () => {
+    const onUnauthorized = vi.fn();
+    setUnauthorizedHandler(onUnauthorized);
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(401, { title: "Unauthorized", status: 401 }),
+    );
+
+    await api.post("/auth/login", {}).catch(() => {});
+    expect(onUnauthorized).not.toHaveBeenCalled();
+
+    setTokenProvider(() => "jeton");
+    await api.get("/rooms").catch(() => {});
+    expect(onUnauthorized).toHaveBeenCalledOnce();
+  });
+
   it("sends and reads JSON under /api", async () => {
     fetchMock.mockResolvedValue(jsonResponse(201, { id: "42" }));
 

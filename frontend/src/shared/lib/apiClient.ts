@@ -37,6 +37,13 @@ export function setTokenProvider(provider: TokenProvider): void {
   tokenProvider = provider;
 }
 
+let onUnauthorized: () => void = () => {};
+
+/** Appelé quand l'API refuse le jeton envoyé (401) : il a expiré ou n'est plus valide. */
+export function setUnauthorizedHandler(handler: () => void): void {
+  onUnauthorized = handler;
+}
+
 async function request<T>(
   method: string,
   path: string,
@@ -67,6 +74,10 @@ async function request<T>(
   }
 
   if (!response.ok) {
+    // Sans jeton (un login refusé, par exemple), un 401 ne met fin à aucune session
+    if (response.status === 401 && token) {
+      onUnauthorized();
+    }
     throw await toApiError(response);
   }
   if (response.status === 204) {
