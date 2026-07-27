@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router";
 import { logout } from "@/features/auth/api";
 import type { Role } from "@/features/auth/types";
 import { useSession } from "@/features/auth/useSession";
+import { Button } from "@/shared/components/Button";
 
 const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Administration",
@@ -30,13 +31,9 @@ export function Layout() {
                 </span>{" "}
                 <span className="text-slate-500">{ROLE_LABEL[user.role]}</span>
               </p>
-              <button
-                type="button"
-                onClick={logout}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-100"
-              >
+              <Button variant="secondary" size="sm" onClick={logout}>
                 Se déconnecter
-              </button>
+              </Button>
             </div>
           )}
         </div>

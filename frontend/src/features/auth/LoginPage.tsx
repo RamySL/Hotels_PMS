@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, type Location } from "react-router";
+import { Alert } from "@/shared/components/Alert";
+import { Button } from "@/shared/components/Button";
+import { TextField } from "@/shared/components/TextField";
 import { ApiError } from "@/shared/lib/apiClient";
 import { login } from "./api";
 import { getLastEndReason } from "./session";
 import { useSession } from "./useSession";
-
-const INPUT_CLASS =
-  "mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:outline-none";
 
 export function LoginPage() {
   const session = useSession();
@@ -52,80 +52,38 @@ export function LoginPage() {
         </p>
 
         {expired && (
-          <p
-            role="status"
-            className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800"
-          >
+          <Alert tone="notice" className="mt-4">
             Votre session a expiré, reconnectez-vous.
-          </p>
+          </Alert>
         )}
         {error && (
-          <p
-            role="alert"
-            className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
+          <Alert tone="error" className="mt-4">
             {error}
-          </p>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="username"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              aria-invalid={fieldErrors.email ? true : undefined}
-              aria-describedby={fieldErrors.email ? "email-error" : undefined}
-              className={INPUT_CLASS}
-            />
-            {fieldErrors.email && (
-              <p id="email-error" className="mt-1 text-sm text-red-700">
-                {fieldErrors.email}
-              </p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              aria-invalid={fieldErrors.password ? true : undefined}
-              aria-describedby={
-                fieldErrors.password ? "password-error" : undefined
-              }
-              className={INPUT_CLASS}
-            />
-            {fieldErrors.password && (
-              <p id="password-error" className="mt-1 text-sm text-red-700">
-                {fieldErrors.password}
-              </p>
-            )}
-          </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-blue-700 px-4 py-2 font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <TextField
+            label="Email"
+            type="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            error={fieldErrors.email}
+          />
+          <TextField
+            label="Mot de passe"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={fieldErrors.password}
+          />
+          <Button type="submit" disabled={submitting} className="w-full">
             {submitting ? "Connexion…" : "Se connecter"}
-          </button>
+          </Button>
         </form>
       </div>
     </main>
