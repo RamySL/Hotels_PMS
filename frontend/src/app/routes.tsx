@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { RoomsPage } from "@/features/rooms/RoomsPage";
 import { HomePage } from "./HomePage";
 import { Layout } from "./Layout";
 import { NotFoundPage } from "./NotFoundPage";
@@ -16,6 +17,7 @@ export const routes: RouteObject[] = [
         element: <Layout />,
         children: [
           { index: true, element: <HomePage /> },
+          { path: "chambres", element: <RoomsPage /> },
           { path: "*", element: <NotFoundPage /> },
         ],
       },

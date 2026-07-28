@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router";
+import { Link, NavLink, Outlet } from "react-router";
 import { logout } from "@/features/auth/api";
 import type { Role } from "@/features/auth/types";
 import { useSession } from "@/features/auth/useSession";
@@ -8,6 +8,14 @@ const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Administration",
   RECEPTIONIST: "Réception",
 };
+
+function navLinkClass({ isActive }: { isActive: boolean }) {
+  return `rounded-md px-3 py-1.5 text-sm font-medium ${
+    isActive
+      ? "bg-slate-100 text-slate-900"
+      : "text-slate-600 hover:text-slate-900"
+  }`;
+}
 
 /**
  * Cadre commun à toutes les pages : en-tête et zone de contenu. Le nom de la personne
@@ -20,9 +28,19 @@ export function Layout() {
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link to="/" className="text-lg font-semibold text-slate-900">
-            PMS Hôtel
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link to="/" className="text-lg font-semibold text-slate-900">
+              PMS Hôtel
+            </Link>
+            <nav aria-label="Navigation principale" className="flex gap-1">
+              <NavLink to="/" end className={navLinkClass}>
+                Accueil
+              </NavLink>
+              <NavLink to="/chambres" className={navLinkClass}>
+                Chambres
+              </NavLink>
+            </nav>
+          </div>
           {user && (
             <div className="flex items-center gap-4 text-sm">
               <p className="text-slate-700">
