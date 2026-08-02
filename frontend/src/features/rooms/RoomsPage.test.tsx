@@ -3,25 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { mockApi, problem } from "@/test/mockApi";
 import { renderApp, resetApp } from "@/test/renderApp";
-import type { Room, RoomStatus } from "./types";
-
-const double = {
-  id: "type-double",
-  name: "Double",
-  description: null,
-  basePrice: 89.9,
-  capacity: 2,
-};
-
-function room(roomNumber: string, status: RoomStatus): Room {
-  return {
-    id: `room-${roomNumber}`,
-    roomNumber,
-    floor: 1,
-    status,
-    roomType: double,
-  };
-}
+import { room } from "@/test/rooms";
 
 function rowOf(roomNumber: string) {
   return within(screen.getByRole("cell", { name: roomNumber }).closest("tr")!);
@@ -30,6 +12,34 @@ function rowOf(roomNumber: string) {
 afterEach(resetApp);
 
 describe("RoomsPage", () => {
+  it("lets the administration add and edit rooms", async () => {
+    mockApi({ "GET /rooms": [room("101")] });
+
+    renderApp("/chambres", "ADMIN");
+
+    expect(
+      await screen.findByRole("link", { name: "Modifier la chambre 101" }),
+    ).toHaveAttribute("href", "/chambres/room-101/modifier");
+    expect(
+      screen.getByRole("link", { name: "Nouvelle chambre" }),
+    ).toHaveAttribute("href", "/chambres/nouvelle");
+  });
+
+  it("keeps those actions from the reception, but shows the prices", async () => {
+    mockApi({ "GET /rooms": [room("101")] });
+
+    renderApp("/chambres", "RECEPTIONIST");
+
+    await screen.findByRole("cell", { name: "101" });
+    expect(screen.queryByRole("link", { name: "Nouvelle chambre" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Modifier la chambre 101" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Types et tarifs" }),
+    ).toHaveAttribute("href", "/chambres/types");
+  });
+
   it("lists the rooms with their type and status", async () => {
     mockApi({
       "GET /rooms": [

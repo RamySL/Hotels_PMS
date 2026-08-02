@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
+import { useIsAdmin } from "@/features/auth/useIsAdmin";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
+import { ButtonLink } from "@/shared/components/ButtonLink";
 import { SelectField } from "@/shared/components/SelectField";
 import { useApiData } from "@/shared/hooks/useApiData";
 import { ApiError } from "@/shared/lib/apiClient";
@@ -25,6 +27,7 @@ const FILTER_OPTIONS = [
 
 /** Liste des chambres et changement de leur statut ; le filtre vit dans l'adresse (?statut=). */
 export function RoomsPage() {
+  const isAdmin = useIsAdmin();
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get("statut");
   const filter = isRoomStatus(statusParam) ? statusParam : null;
@@ -51,7 +54,17 @@ export function RoomsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-slate-900">Chambres</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Chambres</h1>
+        <div className="flex gap-3">
+          <ButtonLink to="/chambres/types" variant="secondary">
+            Types et tarifs
+          </ButtonLink>
+          {isAdmin && (
+            <ButtonLink to="/chambres/nouvelle">Nouvelle chambre</ButtonLink>
+          )}
+        </div>
+      </div>
 
       <SelectField
         label="Statut"
@@ -130,6 +143,16 @@ export function RoomsPage() {
                           {action.label}
                         </Button>
                       ))
+                    )}
+                    {isAdmin && (
+                      <ButtonLink
+                        to={`/chambres/${room.id}/modifier`}
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`Modifier la chambre ${room.roomNumber}`}
+                      >
+                        Modifier
+                      </ButtonLink>
                     )}
                   </div>
                 </td>

@@ -15,3 +15,18 @@ export interface Room {
   status: RoomStatus;
   roomType: RoomType;
 }
+
+/** Corps envoyé pour créer ou modifier un type ; null désigne un champ laissé vide. */
+export interface RoomTypeRequest {
+  name: string;
+  description: string | null;
+  basePrice: number | null;
+  capacity: number | null;
+}
+
+/** Corps envoyé pour créer ou modifier une chambre ; null désigne un champ laissé vide. */
+export interface RoomRequest {
+  roomNumber: string;
+  floor: number | null;
+  roomTypeId: string | null;
+}

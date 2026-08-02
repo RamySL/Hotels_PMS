@@ -1,7 +1,11 @@
 import type { RouteObject } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
+import { RequireAdmin } from "@/features/auth/RequireAdmin";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { RoomFormPage } from "@/features/rooms/RoomFormPage";
 import { RoomsPage } from "@/features/rooms/RoomsPage";
+import { RoomTypeFormPage } from "@/features/rooms/RoomTypeFormPage";
+import { RoomTypesPage } from "@/features/rooms/RoomTypesPage";
 import { HomePage } from "./HomePage";
 import { Layout } from "./Layout";
 import { NotFoundPage } from "./NotFoundPage";
@@ -18,6 +22,19 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <HomePage /> },
           { path: "chambres", element: <RoomsPage /> },
+          { path: "chambres/types", element: <RoomTypesPage /> },
+          {
+            element: <RequireAdmin />,
+            children: [
+              { path: "chambres/nouvelle", element: <RoomFormPage /> },
+              { path: "chambres/:id/modifier", element: <RoomFormPage /> },
+              { path: "chambres/types/nouveau", element: <RoomTypeFormPage /> },
+              {
+                path: "chambres/types/:id/modifier",
+                element: <RoomTypeFormPage />,
+              },
+            ],
+          },
           { path: "*", element: <NotFoundPage /> },
         ],
       },
