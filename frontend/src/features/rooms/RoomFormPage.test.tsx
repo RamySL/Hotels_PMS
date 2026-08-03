@@ -5,10 +5,10 @@ import { mockApi, problem } from "@/test/mockApi";
 import { renderApp, resetApp } from "@/test/renderApp";
 import { DOUBLE, room, SUITE } from "@/test/rooms";
 
-async function fillNewRoom() {
+async function fillNewRoom(roomNumber = "101", floor = "1") {
   const user = userEvent.setup();
-  await user.type(await screen.findByLabelText("Numéro"), "101");
-  await user.type(screen.getByLabelText("Étage"), "1");
+  await user.type(await screen.findByLabelText("Numéro"), roomNumber);
+  await user.type(screen.getByLabelText("Étage"), floor);
   await user.selectOptions(screen.getByLabelText("Type"), "type-double");
   await user.click(screen.getByRole("button", { name: "Enregistrer" }));
 }
@@ -33,6 +33,46 @@ describe("RoomFormPage", () => {
       method: "POST",
       path: "/rooms",
       body: { roomNumber: "101", floor: 1, roomTypeId: "type-double" },
+    });
+  });
+
+  it("creates a room on the ground floor", async () => {
+    const requests = mockApi({
+      "GET /room-types": [DOUBLE],
+      "POST /rooms": { ...room("001"), floor: 0 },
+      "GET /rooms": [{ ...room("001"), floor: 0 }],
+    });
+    renderApp("/chambres/nouvelle", "ADMIN");
+
+    await fillNewRoom("001", "0");
+
+    await screen.findByRole("heading", { name: "Chambres" });
+    expect(requests).toContainEqual({
+      method: "POST",
+      path: "/rooms",
+      body: { roomNumber: "001", floor: 0, roomTypeId: "type-double" },
+    });
+  });
+
+  it("edits a ground-floor room without losing its floor", async () => {
+    const groundFloor = { ...room("001"), floor: 0 };
+    const requests = mockApi({
+      "GET /room-types": [DOUBLE, SUITE],
+      "GET /rooms": [groundFloor],
+      "PUT /rooms/room-001": { ...groundFloor, roomType: SUITE },
+    });
+    renderApp("/chambres/room-001/modifier", "ADMIN");
+
+    expect(await screen.findByLabelText("Étage")).toHaveValue(0);
+    const user = userEvent.setup();
+    await user.selectOptions(screen.getByLabelText("Type"), "type-suite");
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await screen.findByRole("heading", { name: "Chambres" });
+    expect(requests).toContainEqual({
+      method: "PUT",
+      path: "/rooms/room-001",
+      body: { roomNumber: "001", floor: 0, roomTypeId: "type-suite" },
     });
   });
 

@@ -9,6 +9,11 @@ describe("toNumberOrNull", () => {
 
   it("gives null for an empty field", () => {
     expect(toNumberOrNull("")).toBeNull();
+    expect(toNumberOrNull("  ")).toBeNull();
+  });
+
+  it("keeps zero, a value of its own", () => {
+    expect(toNumberOrNull("0")).toBe(0);
   });
 });
 
