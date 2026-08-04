@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
+import { ButtonLink } from "@/shared/components/ButtonLink";
 import { TextField } from "@/shared/components/TextField";
 import { useApiData } from "@/shared/hooks/useApiData";
 import type { Page } from "@/shared/lib/page";
@@ -58,7 +59,10 @@ export function ClientsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+        <ButtonLink to="/clients/nouveau">Nouveau client</ButtonLink>
+      </div>
 
       <TextField
         label="Rechercher"
@@ -92,6 +96,9 @@ export function ClientsPage() {
                 <th className="px-4 py-3 font-medium">Prénom</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
+                <th className="px-4 py-3 font-medium">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -111,6 +118,16 @@ export function ClientsPage() {
                   </td>
                   <td className="px-4 py-3 text-slate-700">
                     {client.phone ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <ButtonLink
+                      to={`/clients/${client.id}/modifier`}
+                      variant="secondary"
+                      size="sm"
+                      aria-label={`Modifier ${client.firstName} ${client.lastName}`}
+                    >
+                      Modifier
+                    </ButtonLink>
                   </td>
                 </tr>
               ))}

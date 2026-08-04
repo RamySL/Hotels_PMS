@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAdmin } from "@/features/auth/RequireAdmin";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { ClientFormPage } from "@/features/clients/ClientFormPage";
 import { ClientsPage } from "@/features/clients/ClientsPage";
 import { RoomFormPage } from "@/features/rooms/RoomFormPage";
 import { RoomsPage } from "@/features/rooms/RoomsPage";
@@ -25,6 +26,8 @@ export const routes: RouteObject[] = [
           { path: "chambres", element: <RoomsPage /> },
           { path: "chambres/types", element: <RoomTypesPage /> },
           { path: "clients", element: <ClientsPage /> },
+          { path: "clients/nouveau", element: <ClientFormPage /> },
+          { path: "clients/:id/modifier", element: <ClientFormPage /> },
           {
             element: <RequireAdmin />,
             children: [

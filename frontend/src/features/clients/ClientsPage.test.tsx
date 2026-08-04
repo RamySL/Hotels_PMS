@@ -113,6 +113,19 @@ describe("ClientsPage", () => {
     ]);
   });
 
+  it("leads to the creation and the edition of clients", async () => {
+    mockApi({ "GET /clients?page=0&size=20": pageOf([HELENE_DUPONT]) });
+
+    renderApp("/clients");
+
+    expect(
+      await screen.findByRole("link", { name: "Modifier Hélène Dupont" }),
+    ).toHaveAttribute("href", "/clients/client-dupont/modifier");
+    expect(
+      screen.getByRole("link", { name: "Nouveau client" }),
+    ).toHaveAttribute("href", "/clients/nouveau");
+  });
+
   it("says when no client matches the search", async () => {
     mockApi({ "GET /clients?search=zzz&page=0&size=20": pageOf([]) });
 
