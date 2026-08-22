@@ -19,5 +19,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",
+    // À l'heure de l'hôtel, quelle que soit la machine : à Paris, le jour UTC diffère
+    // du jour local entre minuit et 2 h, ce qui rend visibles les erreurs de fuseau
+    env: { TZ: "Europe/Paris" },
   },
 });

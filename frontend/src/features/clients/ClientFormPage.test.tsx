@@ -1,8 +1,9 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
-import { HELENE_DUPONT, JEAN_MARTIN, pageOf } from "@/test/clients";
+import { HELENE_DUPONT, JEAN_MARTIN } from "@/test/clients";
 import { mockApi, problem } from "@/test/mockApi";
+import { pageOf } from "@/test/page";
 import { renderApp, resetApp } from "@/test/renderApp";
 
 afterEach(resetApp);

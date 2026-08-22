@@ -4,6 +4,7 @@ import { RequireAdmin } from "@/features/auth/RequireAdmin";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { ClientFormPage } from "@/features/clients/ClientFormPage";
 import { ClientsPage } from "@/features/clients/ClientsPage";
+import { ReservationPage } from "@/features/reservations/ReservationPage";
 import { RoomFormPage } from "@/features/rooms/RoomFormPage";
 import { RoomsPage } from "@/features/rooms/RoomsPage";
 import { RoomTypeFormPage } from "@/features/rooms/RoomTypeFormPage";
@@ -28,6 +29,7 @@ export const routes: RouteObject[] = [
           { path: "clients", element: <ClientsPage /> },
           { path: "clients/nouveau", element: <ClientFormPage /> },
           { path: "clients/:id/modifier", element: <ClientFormPage /> },
+          { path: "reservations/:id", element: <ReservationPage /> },
           {
             element: <RequireAdmin />,
             children: [

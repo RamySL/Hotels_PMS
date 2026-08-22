@@ -1,5 +1,4 @@
 import type { Client } from "@/features/clients/types";
-import type { Page } from "@/shared/lib/page";
 
 export const HELENE_DUPONT: Client = {
   id: "client-dupont",
@@ -17,11 +16,3 @@ export const JEAN_MARTIN: Client = {
   email: null,
   phone: null,
 };
-
-/** Page de l'API, au format PagedModel de Spring Data. */
-export function pageOf<T>(
-  content: T[],
-  { number = 0, totalPages = 1, totalElements = content.length } = {},
-): Page<T> {
-  return { content, page: { size: 20, number, totalElements, totalPages } };
-}
