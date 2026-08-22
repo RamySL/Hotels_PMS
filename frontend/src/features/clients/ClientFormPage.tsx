@@ -1,11 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
 import { ButtonLink } from "@/shared/components/ButtonLink";
 import { TextField } from "@/shared/components/TextField";
 import { useApiData } from "@/shared/hooks/useApiData";
-import { ApiError } from "@/shared/lib/apiClient";
+import { useFormSubmit } from "@/shared/hooks/useFormSubmit";
 import { toTextOrNull } from "@/shared/lib/form";
 import { createClient, updateClient } from "./api";
 import type { Client, ClientRequest } from "./types";
@@ -55,51 +55,38 @@ function ClientForm({ title, initial, onSave }: ClientFormProps) {
   const [lastName, setLastName] = useState(initial?.lastName ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const form = useFormSubmit();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-    setFieldErrors({});
-    try {
-      const saved = await onSave({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: toTextOrNull(email),
-        phone: toTextOrNull(phone),
-      });
-      // La liste s'ouvre sur le client qui vient d'être enregistré
-      navigate(
-        `/clients?${new URLSearchParams({ recherche: saved.lastName })}`,
-      );
-    } catch (e) {
-      setError(
-        e instanceof ApiError ? e.message : "L'enregistrement a échoué.",
-      );
-      setFieldErrors(e instanceof ApiError ? e.errors : {});
-      setSaving(false);
-    }
+  async function save() {
+    const saved = await onSave({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: toTextOrNull(email),
+      phone: toTextOrNull(phone),
+    });
+    // La liste s'ouvre sur le client qui vient d'être enregistré
+    navigate(`/clients?${new URLSearchParams({ recherche: saved.lastName })}`);
   }
 
   return (
     <>
       <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-      {error && (
+      {form.error && (
         <Alert tone="error" className="mt-4">
-          {error}
+          {form.error}
         </Alert>
       )}
-      <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-4">
+      <form
+        onSubmit={form.handleSubmit(save)}
+        className="mt-6 max-w-md space-y-4"
+      >
         <TextField
           label="Prénom"
           required
           maxLength={100}
           value={firstName}
           onChange={(event) => setFirstName(event.target.value)}
-          error={fieldErrors.firstName}
+          error={form.fieldErrors.firstName}
         />
         <TextField
           label="Nom"
@@ -107,7 +94,7 @@ function ClientForm({ title, initial, onSave }: ClientFormProps) {
           maxLength={100}
           value={lastName}
           onChange={(event) => setLastName(event.target.value)}
-          error={fieldErrors.lastName}
+          error={form.fieldErrors.lastName}
         />
         <TextField
           label="Email (facultatif)"
@@ -115,7 +102,7 @@ function ClientForm({ title, initial, onSave }: ClientFormProps) {
           maxLength={255}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          error={fieldErrors.email}
+          error={form.fieldErrors.email}
         />
         <TextField
           label="Téléphone (facultatif)"
@@ -123,11 +110,11 @@ function ClientForm({ title, initial, onSave }: ClientFormProps) {
           maxLength={30}
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
-          error={fieldErrors.phone}
+          error={form.fieldErrors.phone}
         />
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+          <Button type="submit" disabled={form.saving}>
+            {form.saving ? "Enregistrement…" : "Enregistrer"}
           </Button>
           <ButtonLink to="/clients" variant="secondary">
             Annuler

@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Navigate, useLocation, type Location } from "react-router";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
 import { TextField } from "@/shared/components/TextField";
-import { ApiError } from "@/shared/lib/apiClient";
+import { useFormSubmit } from "@/shared/hooks/useFormSubmit";
 import { login } from "./api";
 import { getLastEndReason } from "./session";
 import { useSession } from "./useSession";
@@ -14,9 +14,10 @@ export function LoginPage() {
   const [expired] = useState(() => getLastEndReason() === "expired");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const form = useFormSubmit({
+    unexpectedError: "Une erreur inattendue est survenue.",
+    onError: () => setPassword(""),
+  });
 
   // Une session ouverte, déjà ou par ce formulaire, mène à la page demandée au départ
   if (session) {
@@ -24,23 +25,8 @@ export function LoginPage() {
     return <Navigate to={from ?? "/"} replace />;
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    setFieldErrors({});
-    try {
-      await login(email, password);
-    } catch (e) {
-      setError(
-        e instanceof ApiError
-          ? e.message
-          : "Une erreur inattendue est survenue.",
-      );
-      setFieldErrors(e instanceof ApiError ? e.errors : {});
-      setPassword("");
-      setSubmitting(false);
-    }
+  async function signIn() {
+    await login(email, password);
   }
 
   return (
@@ -56,13 +42,13 @@ export function LoginPage() {
             Votre session a expiré, reconnectez-vous.
           </Alert>
         )}
-        {error && (
+        {form.error && (
           <Alert tone="error" className="mt-4">
-            {error}
+            {form.error}
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={form.handleSubmit(signIn)} className="mt-6 space-y-4">
           <TextField
             label="Email"
             type="email"
@@ -70,7 +56,7 @@ export function LoginPage() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            error={fieldErrors.email}
+            error={form.fieldErrors.email}
           />
           <TextField
             label="Mot de passe"
@@ -79,10 +65,10 @@ export function LoginPage() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            error={fieldErrors.password}
+            error={form.fieldErrors.password}
           />
-          <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? "Connexion…" : "Se connecter"}
+          <Button type="submit" disabled={form.saving} className="w-full">
+            {form.saving ? "Connexion…" : "Se connecter"}
           </Button>
         </form>
       </div>

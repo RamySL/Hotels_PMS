@@ -1,11 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
 import { ButtonLink } from "@/shared/components/ButtonLink";
 import { TextField } from "@/shared/components/TextField";
 import { useApiData } from "@/shared/hooks/useApiData";
-import { ApiError } from "@/shared/lib/apiClient";
+import { useFormSubmit } from "@/shared/hooks/useFormSubmit";
 import { toNumberOrNull, toTextOrNull } from "@/shared/lib/form";
 import { createRoomType, updateRoomType } from "./api";
 import type { RoomType, RoomTypeRequest } from "./types";
@@ -57,55 +57,44 @@ function RoomTypeForm({ title, initial, onSave }: RoomTypeFormProps) {
   const [capacity, setCapacity] = useState(
     initial ? String(initial.capacity) : "",
   );
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const form = useFormSubmit();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-    setFieldErrors({});
-    try {
-      await onSave({
-        name: name.trim(),
-        description: toTextOrNull(description),
-        basePrice: toNumberOrNull(price),
-        capacity: toNumberOrNull(capacity),
-      });
-      navigate("/chambres/types");
-    } catch (e) {
-      setError(
-        e instanceof ApiError ? e.message : "L'enregistrement a échoué.",
-      );
-      setFieldErrors(e instanceof ApiError ? e.errors : {});
-      setSaving(false);
-    }
+  async function save() {
+    await onSave({
+      name: name.trim(),
+      description: toTextOrNull(description),
+      basePrice: toNumberOrNull(price),
+      capacity: toNumberOrNull(capacity),
+    });
+    navigate("/chambres/types");
   }
 
   return (
     <>
       <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-      {error && (
+      {form.error && (
         <Alert tone="error" className="mt-4">
-          {error}
+          {form.error}
         </Alert>
       )}
-      <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-4">
+      <form
+        onSubmit={form.handleSubmit(save)}
+        className="mt-6 max-w-md space-y-4"
+      >
         <TextField
           label="Nom"
           required
           maxLength={100}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          error={fieldErrors.name}
+          error={form.fieldErrors.name}
         />
         <TextField
           label="Description"
           maxLength={1000}
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          error={fieldErrors.description}
+          error={form.fieldErrors.description}
         />
         <TextField
           label="Prix par nuit (€)"
@@ -115,7 +104,7 @@ function RoomTypeForm({ title, initial, onSave }: RoomTypeFormProps) {
           required
           value={price}
           onChange={(event) => setPrice(event.target.value)}
-          error={fieldErrors.basePrice}
+          error={form.fieldErrors.basePrice}
         />
         <TextField
           label="Capacité (personnes)"
@@ -125,11 +114,11 @@ function RoomTypeForm({ title, initial, onSave }: RoomTypeFormProps) {
           required
           value={capacity}
           onChange={(event) => setCapacity(event.target.value)}
-          error={fieldErrors.capacity}
+          error={form.fieldErrors.capacity}
         />
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+          <Button type="submit" disabled={form.saving}>
+            {form.saving ? "Enregistrement…" : "Enregistrer"}
           </Button>
           <ButtonLink to="/chambres/types" variant="secondary">
             Annuler

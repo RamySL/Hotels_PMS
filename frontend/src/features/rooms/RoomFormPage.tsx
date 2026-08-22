@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
@@ -6,7 +6,7 @@ import { ButtonLink } from "@/shared/components/ButtonLink";
 import { SelectField } from "@/shared/components/SelectField";
 import { TextField } from "@/shared/components/TextField";
 import { useApiData } from "@/shared/hooks/useApiData";
-import { ApiError } from "@/shared/lib/apiClient";
+import { useFormSubmit } from "@/shared/hooks/useFormSubmit";
 import { toNumberOrNull } from "@/shared/lib/form";
 import { formatEuros } from "@/shared/lib/format";
 import { createRoom, updateRoom } from "./api";
@@ -88,9 +88,7 @@ function RoomForm({ title, initial, roomTypes, onSave }: RoomFormProps) {
   const [roomNumber, setRoomNumber] = useState(initial?.roomNumber ?? "");
   const [floor, setFloor] = useState(initial ? String(initial.floor) : "");
   const [roomTypeId, setRoomTypeId] = useState(initial?.roomType.id ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const form = useFormSubmit();
 
   const typeOptions = [
     { value: "", label: "Choisir un type" },
@@ -100,43 +98,34 @@ function RoomForm({ title, initial, roomTypes, onSave }: RoomFormProps) {
     })),
   ];
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-    setFieldErrors({});
-    try {
-      await onSave({
-        roomNumber: roomNumber.trim(),
-        floor: toNumberOrNull(floor),
-        roomTypeId: roomTypeId || null,
-      });
-      navigate("/chambres");
-    } catch (e) {
-      setError(
-        e instanceof ApiError ? e.message : "L'enregistrement a échoué.",
-      );
-      setFieldErrors(e instanceof ApiError ? e.errors : {});
-      setSaving(false);
-    }
+  async function save() {
+    await onSave({
+      roomNumber: roomNumber.trim(),
+      floor: toNumberOrNull(floor),
+      roomTypeId: roomTypeId || null,
+    });
+    navigate("/chambres");
   }
 
   return (
     <>
       <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-      {error && (
+      {form.error && (
         <Alert tone="error" className="mt-4">
-          {error}
+          {form.error}
         </Alert>
       )}
-      <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-4">
+      <form
+        onSubmit={form.handleSubmit(save)}
+        className="mt-6 max-w-md space-y-4"
+      >
         <TextField
           label="Numéro"
           required
           maxLength={10}
           value={roomNumber}
           onChange={(event) => setRoomNumber(event.target.value)}
-          error={fieldErrors.roomNumber}
+          error={form.fieldErrors.roomNumber}
         />
         <TextField
           label="Étage"
@@ -146,7 +135,7 @@ function RoomForm({ title, initial, roomTypes, onSave }: RoomFormProps) {
           required
           value={floor}
           onChange={(event) => setFloor(event.target.value)}
-          error={fieldErrors.floor}
+          error={form.fieldErrors.floor}
         />
         <SelectField
           label="Type"
@@ -154,11 +143,11 @@ function RoomForm({ title, initial, roomTypes, onSave }: RoomFormProps) {
           options={typeOptions}
           value={roomTypeId}
           onChange={(event) => setRoomTypeId(event.target.value)}
-          error={fieldErrors.roomTypeId}
+          error={form.fieldErrors.roomTypeId}
         />
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+          <Button type="submit" disabled={form.saving}>
+            {form.saving ? "Enregistrement…" : "Enregistrer"}
           </Button>
           <ButtonLink to="/chambres" variant="secondary">
             Annuler
