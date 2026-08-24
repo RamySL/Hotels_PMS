@@ -1,7 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatDate, parseDate, toIsoDate, today } from "./dates";
+import {
+  addDays,
+  daysBetween,
+  formatDate,
+  formatShortDate,
+  formatWeekday,
+  isIsoDate,
+  parseDate,
+  toIsoDate,
+  today,
+} from "./dates";
 
-// Les tests tournent à l'heure de Paris (vite.config.ts)
+// Les tests tournent à l'heure de Paris (vite.config.ts). En 2026, on y passe à l'heure
+// d'été le 29 mars et à l'heure d'hiver le 25 octobre.
 
 afterEach(() => {
   vi.useRealTimers();
@@ -27,10 +38,32 @@ describe("dates", () => {
     expect(today()).toBe("2026-10-07");
   });
 
+  it("only accepts days that exist, in the format of the API", () => {
+    expect(isIsoDate("2026-10-07")).toBe(true);
+    expect(isIsoDate("2026-02-30")).toBe(false);
+    expect(isIsoDate("07/10/2026")).toBe(false);
+    expect(isIsoDate(null)).toBe(false);
+  });
+
+  it("moves by whole days, across months and changes of time", () => {
+    expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
+    expect(addDays("2026-10-07", -7)).toBe("2026-09-30");
+    expect(addDays("2026-10-24", 2)).toBe("2026-10-26");
+    expect(addDays("2026-03-28", 2)).toBe("2026-03-30");
+  });
+
+  it("counts the days between two dates, across changes of time", () => {
+    expect(daysBetween("2026-10-07", "2026-10-09")).toBe(2);
+    expect(daysBetween("2026-10-24", "2026-10-26")).toBe(2);
+    expect(daysBetween("2026-03-28", "2026-03-30")).toBe(2);
+  });
+
   it("shows a day the French way", () => {
     expect(formatDate("2026-10-07")).toBe("mer. 7 oct. 2026");
     expect(formatDate(new Date("2026-10-05T12:00:00Z"))).toBe(
       "lun. 5 oct. 2026",
     );
+    expect(formatShortDate("2026-10-07")).toBe("mer. 7 oct.");
+    expect(formatWeekday("2026-10-07")).toBe("mer.");
   });
 });
