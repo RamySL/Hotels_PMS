@@ -65,4 +65,19 @@ describe("useApiData", () => {
     );
     expect(result.current.loading).toBe(false);
   });
+
+  it("waits for a path before asking anything", async () => {
+    const requests = mockApi({ "GET /rooms": [{ id: "r1" }] });
+    const { result, rerender } = renderHook(
+      ({ path }: { path: string | null }) => useApiData<Item[]>(path),
+      { initialProps: { path: null as string | null } },
+    );
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toBeUndefined();
+    expect(requests).toEqual([]);
+
+    rerender({ path: "/rooms" });
+    await waitFor(() => expect(result.current.data).toEqual([{ id: "r1" }]));
+  });
 });

@@ -17,14 +17,18 @@ interface Result<T> {
 
 /**
  * Lit path sur l'API, puis le relit quand path change ou que reload() est appelé. Une
- * réponse qui arrive après un nouveau changement est ignorée.
+ * réponse qui arrive après un nouveau changement est ignorée. Avec un path null, rien
+ * n'est demandé : par exemple, tant que les dates d'un séjour sont invalides.
  */
-export function useApiData<T>(path: string): ApiData<T> {
+export function useApiData<T>(path: string | null): ApiData<T> {
   const [version, setVersion] = useState(0);
   const [result, setResult] = useState<Result<T> | null>(null);
   const request = `${path}#${version}`;
 
   useEffect(() => {
+    if (path === null) {
+      return;
+    }
     let current = true;
     api.get<T>(path).then(
       (data) => {
@@ -49,6 +53,9 @@ export function useApiData<T>(path: string): ApiData<T> {
 
   const reload = useCallback(() => setVersion((value) => value + 1), []);
 
+  if (path === null) {
+    return { data: undefined, error: null, loading: false, reload };
+  }
   return {
     data: result?.data,
     error: result?.request === request ? result.error : null,

@@ -139,6 +139,42 @@ describe("PlanningPage", () => {
     );
   });
 
+  it("offers to book a free day, from today and in the rooms in service", async () => {
+    mockApi({
+      "GET /rooms": ROOMS,
+      "GET /reservations?from=2026-09-30&to=2026-10-14&size=100": pageOf([
+        DUPONT_STAY,
+      ]),
+    });
+
+    renderApp("/reservations?du=2026-09-30");
+
+    expect(
+      await screen.findByRole("link", {
+        name: "Réserver la chambre 102 à partir du mer. 7 oct.",
+      }),
+    ).toHaveAttribute(
+      "href",
+      "/reservations/nouvelle?chambre=room-102&arrivee=2026-10-07",
+    );
+    expect(
+      screen.queryByRole("link", {
+        name: "Réserver la chambre 102 à partir du mar. 6 oct.",
+      }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("link", {
+        name: "Réserver la chambre 101 à partir du mer. 7 oct.",
+      }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: /^Réserver la chambre 201/ }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Nouvelle réservation" }),
+    ).toHaveAttribute("href", "/reservations/nouvelle");
+  });
+
   it("starts from today when the address holds no real day", async () => {
     const requests = mockApi({
       "GET /rooms": ROOMS,

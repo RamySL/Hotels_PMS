@@ -42,13 +42,16 @@ export function PlanningPage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Planning</h1>
-          <p className="mt-1 text-slate-600">
-            Du {formatShortDate(from)} au {formatDate(lastDay)}
-          </p>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">Planning</h1>
+        <ButtonLink to="/reservations/nouvelle">
+          Nouvelle réservation
+        </ButtonLink>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-slate-600">
+          Du {formatShortDate(from)} au {formatDate(lastDay)}
+        </p>
         <nav aria-label="Période du planning" className="flex gap-2">
           <ButtonLink
             to={`/reservations?du=${addDays(from, -7)}`}
@@ -174,8 +177,13 @@ function PlanningTable({
                   cell.kind === "free" ? (
                     <td
                       key={cell.date}
-                      className={cell.date === today ? "bg-blue-50" : undefined}
-                    />
+                      className={`px-0.5 ${cell.date === today ? "bg-blue-50" : ""}`}
+                    >
+                      {room.status !== "OUT_OF_SERVICE" &&
+                        cell.date >= today && (
+                          <FreeDayLink room={room} date={cell.date} />
+                        )}
+                    </td>
                   ) : (
                     <td
                       key={cell.reservation.id}
@@ -198,6 +206,26 @@ function PlanningTable({
         <ReservationStatusBadge status="CHECKED_OUT" />
       </p>
     </>
+  );
+}
+
+/**
+ * Case libre, qui ouvre la création avec la chambre et l'arrivée choisies. Elle reste
+ * hors de la tabulation : au clavier, le bouton « Nouvelle réservation » mène au même
+ * formulaire, sans parcourir chaque case du planning.
+ */
+function FreeDayLink({ room, date }: { room: Room; date: string }) {
+  return (
+    <Link
+      to={`/reservations/nouvelle?${new URLSearchParams({ chambre: room.id, arrivee: date })}`}
+      tabIndex={-1}
+      aria-label={`Réserver la chambre ${room.roomNumber} à partir du ${formatShortDate(date)}`}
+      className="group flex h-8 items-center justify-center rounded-md text-blue-700 hover:bg-blue-100"
+    >
+      <span aria-hidden="true" className="invisible group-hover:visible">
+        +
+      </span>
+    </Link>
   );
 }
 
