@@ -69,6 +69,10 @@ describe("ReservationPage", () => {
     expect(
       screen.getByText("Réservée le lun. 5 oct. 2026 par Lucas Bernard"),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Modifier" })).toHaveAttribute(
+      "href",
+      "/reservations/resa-dupont/modifier",
+    );
   });
 
   it("checks in on the arrival day, then shows the stay in progress", async () => {
@@ -174,6 +178,7 @@ describe("ReservationPage", () => {
 
     expect(await screen.findByText("Terminée")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Check-out" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Modifier" })).toBeNull();
     expect(requests).toContainEqual({
       method: "PATCH",
       path: "/reservations/resa-dupont/check-out",

@@ -6,6 +6,7 @@ import { mockApi, problem, type ApiRequest } from "@/test/mockApi";
 import { pageOf } from "@/test/page";
 import { renderApp, resetApp } from "@/test/renderApp";
 import { DUPONT_STAY, invoiceFor } from "@/test/reservations";
+import { room, SUITE } from "@/test/rooms";
 import type { AvailableRoom, Reservation, ReservationRequest } from "./types";
 
 function available(
@@ -236,5 +237,180 @@ describe("ReservationFormPage", () => {
 
     await screen.findByRole("radio", { name: /^Chambre 101/ });
     expect(screen.getByLabelText("Arrivée")).toHaveValue("2026-10-07");
+  });
+});
+
+describe("ReservationFormPage when editing", () => {
+  const EDIT = "/reservations/resa-dupont/modifier";
+  const ROOMS = [room("101"), room("102"), room("201", "READY", SUITE)];
+
+  /**
+   * Fausse API pour modifier resa-dupont : la réservation telle qu'elle est enregistrée,
+   * les chambres de l'hôtel, et la fiche qui s'ouvre après l'enregistrement.
+   */
+  function serveEdit(
+    saved: Reservation,
+    replies: Record<string, unknown> = {},
+  ) {
+    let current = saved;
+    return mockApi({
+      "GET /reservations/resa-dupont": () => Response.json(current),
+      "GET /rooms": ROOMS,
+      "PUT /reservations/resa-dupont": (request: ApiRequest) => {
+        current = { ...current, ...(request.body as ReservationRequest) };
+        return Response.json(current);
+      },
+      "GET /invoices?reservationId=resa-dupont": () =>
+        Response.json(pageOf([invoiceFor(current)])),
+      ...replies,
+    });
+  }
+
+  /** En séjour depuis le lundi 5 octobre, départ prévu le jeudi 8. */
+  const IN_PROGRESS: Reservation = {
+    ...DUPONT_STAY,
+    status: "CHECKED_IN",
+    checkInDate: "2026-10-05",
+    checkOutDate: "2026-10-08",
+    nights: 3,
+    totalPrice: 269.7,
+  };
+
+  /** Arrivée prévue le jeudi 8 octobre, départ le samedi 10. */
+  const UPCOMING: Reservation = {
+    ...DUPONT_STAY,
+    checkInDate: "2026-10-08",
+    checkOutDate: "2026-10-10",
+  };
+
+  it("extends a stay in progress, changing nothing but the departure", async () => {
+    const requests = serveEdit(IN_PROGRESS);
+    renderApp(EDIT);
+    const user = userEvent.setup();
+
+    const departure = await screen.findByLabelText("Départ");
+    expect(screen.getByLabelText("Arrivée")).toBeDisabled();
+    expect(screen.getByLabelText("Personnes")).toBeDisabled();
+    expect(
+      screen.getByRole("radio", { name: /^Chambre 101 \(actuelle\)/ }),
+    ).toBeDisabled();
+    await user.clear(departure);
+    await user.type(departure, "2026-10-10");
+    expect(screen.getByRole("radio")).toHaveAccessibleName(
+      /449,50\s€ 5 nuits × 89,90\s€$/,
+    );
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Hélène Dupont" }),
+    ).toBeInTheDocument();
+    expect(requests).toContainEqual({
+      method: "PUT",
+      path: "/reservations/resa-dupont",
+      body: {
+        clientId: "client-dupont",
+        roomId: "room-101",
+        checkInDate: "2026-10-05",
+        checkOutDate: "2026-10-10",
+        numberOfGuests: 2,
+      },
+    });
+    expect(
+      requests.filter((request) =>
+        request.path.startsWith("/rooms/availability"),
+      ),
+    ).toEqual([]);
+  });
+
+  it("lets a stay in progress end early, but not in the past", async () => {
+    serveEdit(IN_PROGRESS);
+    renderApp(EDIT);
+    const user = userEvent.setup();
+
+    const departure = await screen.findByLabelText("Départ");
+    await user.clear(departure);
+    await user.type(departure, "2026-10-06");
+    expect(departure).toHaveAccessibleDescription(
+      "ne peut pas être dans le passé",
+    );
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeDisabled();
+
+    await user.clear(departure);
+    await user.type(departure, "2026-10-07");
+    expect(departure).not.toHaveAccessibleDescription();
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeEnabled();
+  });
+
+  it("keeps offering the current room, which the availability counts as taken", async () => {
+    const requests = serveEdit(UPCOMING, {
+      "GET /rooms/availability?checkIn=2026-10-08&checkOut=2026-10-10": [
+        available("102", "Double", 2, 89.9, 2),
+      ],
+      "GET /rooms/availability?checkIn=2026-10-08&checkOut=2026-10-11": [
+        available("102", "Double", 2, 89.9, 3),
+      ],
+    });
+    renderApp(EDIT);
+    const user = userEvent.setup();
+
+    expect(
+      await screen.findByRole("radio", { name: /^Chambre 101 \(actuelle\)/ }),
+    ).toBeChecked();
+    const departure = screen.getByLabelText("Départ");
+    await user.clear(departure);
+    await user.type(departure, "2026-10-11");
+    expect(
+      await screen.findByRole("radio", {
+        name: /^Chambre 101 \(actuelle\) .*269,70\s€ 3 nuits/,
+      }),
+    ).toBeChecked();
+    await user.click(screen.getByRole("radio", { name: /^Chambre 102/ }));
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await screen.findByRole("heading", { name: "Hélène Dupont" });
+    expect(requests).toContainEqual({
+      method: "PUT",
+      path: "/reservations/resa-dupont",
+      body: expect.objectContaining({
+        roomId: "room-102",
+        checkInDate: "2026-10-08",
+        checkOutDate: "2026-10-11",
+      }),
+    });
+  });
+
+  it("shows why the change was refused", async () => {
+    serveEdit(UPCOMING, {
+      "GET /rooms/availability?checkIn=2026-10-08&checkOut=2026-10-10": [],
+      "PUT /reservations/resa-dupont": () =>
+        problem(409, "La chambre 101 est déjà réservée sur cette période"),
+    });
+    renderApp(EDIT);
+
+    await userEvent
+      .setup()
+      .click(await screen.findByRole("button", { name: "Enregistrer" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "La chambre 101 est déjà réservée sur cette période",
+    );
+    expect(
+      screen.getByRole("heading", { name: "Modifier la réservation" }),
+    ).toBeInTheDocument();
+  });
+
+  it("no longer edits a stay that is over", async () => {
+    serveEdit({ ...DUPONT_STAY, status: "CHECKED_OUT" });
+
+    renderApp(EDIT);
+
+    expect(
+      await screen.findByText(
+        "Une réservation terminée ou annulée n'est plus modifiable.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Retour à la réservation" }),
+    ).toHaveAttribute("href", "/reservations/resa-dupont");
   });
 });

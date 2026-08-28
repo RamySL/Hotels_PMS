@@ -7,6 +7,13 @@ export function createReservation(
   return api.post<Reservation>("/reservations", request);
 }
 
+export function updateReservation(
+  id: string,
+  request: ReservationRequest,
+): Promise<Reservation> {
+  return api.put<Reservation>(`/reservations/${id}`, request);
+}
+
 export function checkIn(id: string): Promise<Reservation> {
   return api.patch<Reservation>(`/reservations/${id}/check-in`);
 }

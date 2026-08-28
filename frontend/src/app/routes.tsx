@@ -35,6 +35,10 @@ export const routes: RouteObject[] = [
           { path: "reservations/nouvelle", element: <ReservationFormPage /> },
           { path: "reservations/:id", element: <ReservationPage /> },
           {
+            path: "reservations/:id/modifier",
+            element: <ReservationFormPage />,
+          },
+          {
             element: <RequireAdmin />,
             children: [
               { path: "chambres/nouvelle", element: <RoomFormPage /> },

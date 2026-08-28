@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import type { Invoice } from "@/features/invoices/types";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
+import { ButtonLink } from "@/shared/components/ButtonLink";
 import { useApiData } from "@/shared/hooks/useApiData";
 import { ApiError } from "@/shared/lib/apiClient";
 import { formatDate, today } from "@/shared/lib/dates";
@@ -105,8 +106,9 @@ interface ReservationActionsProps {
 }
 
 /**
- * Check-in ou annulation avant le séjour, check-out pendant ; plus rien ensuite. Les
- * règles affichées ici guident la réception, mais c'est le backend qui tranche.
+ * Check-in ou annulation avant le séjour, check-out pendant, modification dans les deux
+ * cas ; plus rien ensuite. Les règles affichées ici guident la réception, mais c'est le
+ * backend qui tranche.
  */
 function ReservationActions({
   reservation,
@@ -197,6 +199,12 @@ function ReservationActions({
             >
               {main.label}
             </Button>
+            <ButtonLink
+              to={`/reservations/${reservation.id}/modifier`}
+              variant="secondary"
+            >
+              Modifier
+            </ButtonLink>
             {reservation.status === "CONFIRMED" && (
               <Button
                 variant="secondary"
