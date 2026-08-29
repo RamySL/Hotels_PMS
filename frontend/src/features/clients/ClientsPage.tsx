@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Alert } from "@/shared/components/Alert";
-import { Button } from "@/shared/components/Button";
 import { ButtonLink } from "@/shared/components/ButtonLink";
+import { Pagination } from "@/shared/components/Pagination";
 import { TextField } from "@/shared/components/TextField";
 import { useApiData } from "@/shared/hooks/useApiData";
-import type { Page } from "@/shared/lib/page";
+import { pageFromAddress, type Page } from "@/shared/lib/page";
 import type { Client } from "./types";
 
 const PAGE_SIZE = 20;
@@ -53,9 +53,6 @@ export function ClientsPage() {
     }
     setSearchParams(params);
   }
-
-  const totalPages = Math.max(clients.data?.page.totalPages ?? 1, 1);
-  const total = clients.data?.page.totalElements ?? 0;
 
   return (
     <>
@@ -134,42 +131,16 @@ export function ClientsPage() {
             </tbody>
           </table>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-            <p>{total > 1 ? `${total} clients` : `${total} client`}</p>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => goToPage(page - 1)}
-                aria-label="Page précédente"
-              >
-                Précédente
-              </Button>
-              <span>
-                Page {page} sur {totalPages}
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => goToPage(page + 1)}
-                aria-label="Page suivante"
-              >
-                Suivante
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            info={clients.data.page}
+            noun={["client", "clients"]}
+            onChange={goToPage}
+          />
         </>
       )}
     </>
   );
-}
-
-/** Page demandée dans l'adresse, à partir de 1 ; 1 si elle est absente ou invalide. */
-function pageFromAddress(value: string | null): number {
-  const page = Number(value);
-  return Number.isInteger(page) && page >= 1 ? page : 1;
 }
 
 /** Adresse de l'API : sa pagination part de 0, celle de l'adresse du navigateur de 1. */
