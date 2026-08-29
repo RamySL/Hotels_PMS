@@ -1,24 +1,27 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mockApi, problem } from "@/test/mockApi";
+import type { Payment, PaymentRequest } from "@/features/invoices/types";
+import { mockApi, problem, type ApiRequest } from "@/test/mockApi";
 import { pageOf } from "@/test/page";
 import { renderApp, resetApp } from "@/test/renderApp";
-import { DUPONT_STAY, invoiceFor } from "@/test/reservations";
+import { DUPONT_STAY, invoiceFor, payment } from "@/test/reservations";
 import type { Reservation, ReservationStatus } from "./types";
 
 const FILE = "/reservations/resa-dupont";
 
 /**
- * Fausse API pour la fiche de resa-dupont : chaque action change le statut comme le
- * ferait le backend, sans en vérifier les règles. replies remplace des réponses.
+ * Fausse API pour la fiche de resa-dupont : chaque action change le statut, et chaque
+ * paiement la facture, comme le ferait le backend, sans en vérifier les règles. replies
+ * remplace des réponses.
  */
 function serveStay(
   initial: Reservation,
-  amountPaid = 0,
+  received: Payment[] = [],
   replies: Record<string, unknown> = {},
 ) {
   let stay = initial;
+  const payments = [...received];
   const moveTo = (status: ReservationStatus) => () => {
     stay = { ...stay, status };
     return Response.json(stay);
@@ -26,10 +29,15 @@ function serveStay(
   return mockApi({
     "GET /reservations/resa-dupont": () => Response.json(stay),
     "GET /invoices?reservationId=resa-dupont": () =>
-      Response.json(pageOf([invoiceFor(stay, amountPaid)])),
+      Response.json(pageOf([invoiceFor(stay, payments)])),
     "PATCH /reservations/resa-dupont/check-in": moveTo("CHECKED_IN"),
     "PATCH /reservations/resa-dupont/check-out": moveTo("CHECKED_OUT"),
     "PATCH /reservations/resa-dupont/cancel": moveTo("CANCELLED"),
+    "POST /invoices/invoice-resa-dupont/payments": (request: ApiRequest) => {
+      const { amount, method } = request.body as PaymentRequest;
+      payments.push(payment(amount!, method!, `payment-${payments.length}`));
+      return Response.json(invoiceFor(stay, payments), { status: 201 });
+    },
     ...replies,
   });
 }
@@ -51,7 +59,7 @@ afterEach(() => {
 
 describe("ReservationPage", () => {
   it("shows the stay, what remains to be paid and who booked it", async () => {
-    serveStay(DUPONT_STAY, 100);
+    serveStay(DUPONT_STAY, [payment(100)]);
 
     renderApp(FILE);
 
@@ -98,7 +106,7 @@ describe("ReservationPage", () => {
   });
 
   it("shows why the check-in was refused", async () => {
-    serveStay(DUPONT_STAY, 0, {
+    serveStay(DUPONT_STAY, [], {
       "PATCH /reservations/resa-dupont/check-in": () =>
         problem(409, "La chambre 101 n'est pas prête (CLEANING)"),
     });
@@ -155,7 +163,7 @@ describe("ReservationPage", () => {
   });
 
   it("keeps the check-out disabled while something remains to be paid", async () => {
-    serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" }, 100);
+    serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" }, [payment(100)]);
 
     renderApp(FILE);
 
@@ -169,7 +177,9 @@ describe("ReservationPage", () => {
   });
 
   it("checks out once the invoice is settled, then offers no more action", async () => {
-    const requests = serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" }, 179.8);
+    const requests = serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" }, [
+      payment(179.8),
+    ]);
     renderApp(FILE);
 
     await userEvent
@@ -210,8 +220,11 @@ describe("ReservationPage", () => {
       screen.getByRole("button", { name: "Confirmer l'annulation" }),
     );
 
-    expect(await screen.findByText("Annulée")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Check-in" })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Check-in" })).toBeNull(),
+    );
+    // La réservation et sa facture
+    expect(screen.getAllByText("Annulée")).toHaveLength(2);
     expect(requests.filter((request) => request.method === "PATCH")).toEqual([
       {
         method: "PATCH",
@@ -219,6 +232,93 @@ describe("ReservationPage", () => {
         body: undefined,
       },
     ]);
+  });
+
+  it("takes a deposit, then the balance, which unlocks the check-out", async () => {
+    const requests = serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" });
+    renderApp(FILE);
+    const user = userEvent.setup();
+
+    const amount = await screen.findByLabelText("Montant (€)");
+    expect(amount).toHaveValue(179.8);
+    expect(screen.getByLabelText("Mode de paiement")).toHaveValue("");
+    await user.clear(amount);
+    await user.type(amount, "100");
+    await user.selectOptions(
+      screen.getByLabelText("Mode de paiement"),
+      "Carte bancaire",
+    );
+    await user.click(screen.getByRole("button", { name: "Encaisser" }));
+
+    expect(
+      await screen.findByRole("row", {
+        name: /^mer\. 7 oct\. 2026, 10:32 100,00\s€ Carte bancaire Lucas Bernard$/,
+      }),
+    ).toBeInTheDocument();
+    expect(detail("Reste à payer")).toHaveTextContent(/^79,80\s€$/);
+    expect(screen.getByRole("button", { name: "Check-out" })).toBeDisabled();
+    expect(screen.getByLabelText("Montant (€)")).toHaveValue(79.8);
+    expect(screen.getByLabelText("Mode de paiement")).toHaveValue("");
+    await user.selectOptions(
+      screen.getByLabelText("Mode de paiement"),
+      "Espèces",
+    );
+    await user.click(screen.getByRole("button", { name: "Encaisser" }));
+
+    expect(await screen.findByText("Soldée")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Encaisser" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Check-out" }));
+    expect(await screen.findByText("Terminée")).toBeInTheDocument();
+    expect(
+      requests
+        .filter((request) => request.method === "POST")
+        .map((request) => request.body),
+    ).toEqual([
+      { amount: 100, method: "CARD" },
+      { amount: 79.8, method: "CASH" },
+    ]);
+  });
+
+  it("shows a payment refused by the API, then reads the invoice again", async () => {
+    const requests = serveStay({ ...DUPONT_STAY, status: "CHECKED_IN" }, [], {
+      "POST /invoices/invoice-resa-dupont/payments": () =>
+        problem(409, "Le paiement dépasse le reste à payer (179,80 €)"),
+    });
+    renderApp(FILE);
+    const user = userEvent.setup();
+
+    const amount = await screen.findByLabelText("Montant (€)");
+    await user.clear(amount);
+    await user.type(amount, "500");
+    await user.selectOptions(
+      screen.getByLabelText("Mode de paiement"),
+      "Espèces",
+    );
+    await user.click(screen.getByRole("button", { name: "Encaisser" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Le paiement dépasse le reste à payer (179,80 €)",
+    );
+    await waitFor(() =>
+      expect(
+        requests.filter(
+          (request) => request.path === "/invoices?reservationId=resa-dupont",
+        ),
+      ).toHaveLength(2),
+    );
+  });
+
+  it("offers no payment on a cancelled invoice, and shows what to refund", async () => {
+    serveStay({ ...DUPONT_STAY, status: "CANCELLED" }, [payment(50)]);
+
+    renderApp(FILE);
+
+    expect(
+      await screen.findByText("Trop-perçu", { selector: "dt" }),
+    ).toBeInTheDocument();
+    expect(detail("Trop-perçu")).toHaveTextContent(/^50,00\s€$/);
+    expect(screen.getByText(/à rembourser au client/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Encaisser" })).toBeNull();
   });
 
   it("says when the reservation does not exist", async () => {

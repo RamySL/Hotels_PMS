@@ -1,9 +1,11 @@
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState } from "react";
 import { useParams } from "react-router";
+import { InvoicePanel } from "@/features/invoices/InvoicePanel";
 import type { Invoice } from "@/features/invoices/types";
 import { Alert } from "@/shared/components/Alert";
 import { Button } from "@/shared/components/Button";
 import { ButtonLink } from "@/shared/components/ButtonLink";
+import { Detail } from "@/shared/components/Detail";
 import { useApiData } from "@/shared/hooks/useApiData";
 import { ApiError } from "@/shared/lib/apiClient";
 import { formatDate, today } from "@/shared/lib/dates";
@@ -13,7 +15,7 @@ import { cancelReservation, checkIn, checkOut } from "./api";
 import { ReservationStatusBadge } from "./ReservationStatusBadge";
 import type { Reservation } from "./types";
 
-/** Fiche d'une réservation (/reservations/:id) : le séjour, le reste à payer et les actions. */
+/** Fiche d'une réservation (/reservations/:id) : le séjour, les actions et la facture. */
 export function ReservationPage() {
   // La route /reservations/:id fournit toujours l'id
   const id = useParams().id!;
@@ -69,9 +71,6 @@ export function ReservationPage() {
         </Detail>
         <Detail label="Personnes">{stay.numberOfGuests}</Detail>
         <Detail label="Prix du séjour">{formatEuros(stay.totalPrice)}</Detail>
-        <Detail label="Reste à payer">
-          {invoice ? formatEuros(Math.max(invoice.balance, 0)) : "—"}
-        </Detail>
       </dl>
       <p className="mt-3 text-sm text-slate-500">
         Réservée le {formatDate(new Date(stay.createdAt))} par{" "}
@@ -84,16 +83,9 @@ export function ReservationPage() {
         busy={reservation.loading || invoices.loading}
         onChange={reload}
       />
-    </>
-  );
-}
 
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-slate-900">{children}</dd>
-    </div>
+      {invoice && <InvoicePanel invoice={invoice} reload={invoices.reload} />}
+    </>
   );
 }
 

@@ -64,6 +64,15 @@ const SHORT_DAY = new Intl.DateTimeFormat("fr-FR", {
 
 const WEEKDAY = new Intl.DateTimeFormat("fr-FR", { weekday: "short" });
 
+const DAY_AND_TIME = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 /** Jour à afficher : « mer. 7 oct. 2026 ». Une Date (un instant de l'API) donne son jour local. */
 export function formatDate(date: string | Date): string {
   return DAY.format(typeof date === "string" ? parseDate(date) : date);
@@ -77,4 +86,9 @@ export function formatShortDate(isoDate: string): string {
 /** Jour de la semaine abrégé : « mer. ». */
 export function formatWeekday(isoDate: string): string {
   return WEEKDAY.format(parseDate(isoDate));
+}
+
+/** Instant de l'API, en heure locale : « mer. 7 oct. 2026, 10:32 ». */
+export function formatDateTime(instant: string): string {
+  return DAY_AND_TIME.format(new Date(instant));
 }

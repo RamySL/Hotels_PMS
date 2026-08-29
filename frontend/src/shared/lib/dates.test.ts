@@ -3,6 +3,7 @@ import {
   addDays,
   daysBetween,
   formatDate,
+  formatDateTime,
   formatShortDate,
   formatWeekday,
   isIsoDate,
@@ -65,5 +66,9 @@ describe("dates", () => {
     );
     expect(formatShortDate("2026-10-07")).toBe("mer. 7 oct.");
     expect(formatWeekday("2026-10-07")).toBe("mer.");
+    // 8 h 32 UTC, 10 h 32 à Paris en heure d'été
+    expect(formatDateTime("2026-10-07T08:32:00Z")).toBe(
+      "mer. 7 oct. 2026, 10:32",
+    );
   });
 });

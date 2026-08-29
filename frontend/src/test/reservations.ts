@@ -1,4 +1,8 @@
-import type { Invoice } from "@/features/invoices/types";
+import type {
+  Invoice,
+  Payment,
+  PaymentMethod,
+} from "@/features/invoices/types";
 import type { Reservation } from "@/features/reservations/types";
 
 /** Deux nuits en chambre double pour Hélène Dupont, du mercredi 7 au vendredi 9 octobre 2026. */
@@ -16,15 +20,45 @@ export const DUPONT_STAY: Reservation = {
   createdAt: "2026-10-05T12:00:00Z",
 };
 
-/** Facture de la réservation, après les paiements reçus. */
-export function invoiceFor(reservation: Reservation, amountPaid = 0): Invoice {
-  const balance = reservation.totalPrice - amountPaid;
+/** Paiement encaissé par Lucas Bernard le mercredi 7 octobre 2026, à 10 h 32. */
+export function payment(
+  amount: number,
+  method: PaymentMethod = "CARD",
+  id = `payment-${amount}`,
+): Payment {
+  return {
+    id,
+    amount,
+    method,
+    paidAt: "2026-10-07T08:32:00Z",
+    recordedBy: "Lucas Bernard",
+  };
+}
+
+/**
+ * Facture de la réservation après ces paiements, calculée comme le backend : en
+ * centimes, sans erreur d'arrondi, et annulée avec la réservation.
+ */
+export function invoiceFor(
+  reservation: Reservation,
+  payments: Payment[] = [],
+): Invoice {
+  const cents = (amount: number) => Math.round(amount * 100);
+  const total = cents(reservation.totalPrice);
+  const paid = payments.reduce((sum, { amount }) => sum + cents(amount), 0);
+  const cancelled = reservation.status === "CANCELLED";
   return {
     id: `invoice-${reservation.id}`,
-    status:
-      amountPaid === 0 ? "UNPAID" : balance > 0 ? "PARTIALLY_PAID" : "PAID",
+    status: cancelled
+      ? "CANCELLED"
+      : paid === 0
+        ? "UNPAID"
+        : paid < total
+          ? "PARTIALLY_PAID"
+          : "PAID",
     amountTotal: reservation.totalPrice,
-    amountPaid,
-    balance,
+    amountPaid: paid / 100,
+    balance: ((cancelled ? 0 : total) - paid) / 100,
+    payments,
   };
 }
