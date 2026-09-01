@@ -59,6 +59,14 @@ export function invoiceFor(
     amountTotal: reservation.totalPrice,
     amountPaid: paid / 100,
     balance: ((cancelled ? 0 : total) - paid) / 100,
+    issuedAt: reservation.createdAt,
+    reservation: {
+      id: reservation.id,
+      checkInDate: reservation.checkInDate,
+      checkOutDate: reservation.checkOutDate,
+      clientName: `${reservation.client.firstName} ${reservation.client.lastName}`,
+      roomNumber: reservation.room.roomNumber,
+    },
     payments,
   };
 }

@@ -4,6 +4,7 @@ import { RequireAdmin } from "@/features/auth/RequireAdmin";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { ClientFormPage } from "@/features/clients/ClientFormPage";
 import { ClientsPage } from "@/features/clients/ClientsPage";
+import { InvoicesPage } from "@/features/invoices/InvoicesPage";
 import { PlanningPage } from "@/features/reservations/PlanningPage";
 import { ReservationFormPage } from "@/features/reservations/ReservationFormPage";
 import { ReservationPage } from "@/features/reservations/ReservationPage";
@@ -38,6 +39,7 @@ export const routes: RouteObject[] = [
             path: "reservations/:id/modifier",
             element: <ReservationFormPage />,
           },
+          { path: "factures", element: <InvoicesPage /> },
           {
             element: <RequireAdmin />,
             children: [

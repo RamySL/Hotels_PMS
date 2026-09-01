@@ -12,6 +12,16 @@ export interface Payment {
   recordedBy: string;
 }
 
+/** Réservation facturée, telle que la résume la facture. */
+export interface InvoicedStay {
+  id: string;
+  checkInDate: string;
+  checkOutDate: string;
+  /** Prénom et nom du client. */
+  clientName: string;
+  roomNumber: string;
+}
+
 /** Facture d'une réservation, créée avec elle et tenue à jour de son prix. */
 export interface Invoice {
   id: string;
@@ -20,6 +30,9 @@ export interface Invoice {
   amountPaid: number;
   /** Reste à payer : négatif, c'est un trop-perçu. Une facture annulée n'est plus due. */
   balance: number;
+  /** Instant d'émission, celui de la réservation. */
+  issuedAt: string;
+  reservation: InvoicedStay;
   payments: Payment[];
 }
 
