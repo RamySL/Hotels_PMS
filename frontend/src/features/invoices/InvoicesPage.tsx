@@ -6,6 +6,7 @@ import { useApiData } from "@/shared/hooks/useApiData";
 import { formatDate, formatShortDate } from "@/shared/lib/dates";
 import { formatEuros } from "@/shared/lib/format";
 import { pageFromAddress, type Page } from "@/shared/lib/page";
+import { formatBalance } from "./balance";
 import {
   INVOICE_STATUS_LABEL,
   INVOICE_STATUSES,
@@ -120,7 +121,7 @@ export function InvoicesPage() {
                     {formatEuros(invoice.amountTotal)}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-slate-900">
-                    {balanceOf(invoice)}
+                    {formatBalance(invoice.balance)}
                   </td>
                   <td className="px-4 py-3">
                     <InvoiceStatusBadge status={invoice.status} />
@@ -140,13 +141,6 @@ export function InvoicesPage() {
       )}
     </>
   );
-}
-
-/** Reste à payer, ou trop-perçu à rembourser s'il est négatif. */
-function balanceOf(invoice: Invoice): string {
-  return invoice.balance < 0
-    ? `Trop-perçu : ${formatEuros(-invoice.balance)}`
-    : formatEuros(invoice.balance);
 }
 
 /** Adresse de l'API : sa pagination part de 0, celle de l'adresse du navigateur de 1. */

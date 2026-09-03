@@ -4,6 +4,7 @@ import {
   daysBetween,
   formatDate,
   formatDateTime,
+  formatLongDate,
   formatShortDate,
   formatWeekday,
   isIsoDate,
@@ -64,6 +65,7 @@ describe("dates", () => {
     expect(formatDate(new Date("2026-10-05T12:00:00Z"))).toBe(
       "lun. 5 oct. 2026",
     );
+    expect(formatLongDate("2026-10-07")).toBe("mercredi 7 octobre 2026");
     expect(formatShortDate("2026-10-07")).toBe("mer. 7 oct.");
     expect(formatWeekday("2026-10-07")).toBe("mer.");
     // 8 h 32 UTC, 10 h 32 à Paris en heure d'été

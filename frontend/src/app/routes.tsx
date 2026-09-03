@@ -4,6 +4,7 @@ import { RequireAdmin } from "@/features/auth/RequireAdmin";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { ClientFormPage } from "@/features/clients/ClientFormPage";
 import { ClientsPage } from "@/features/clients/ClientsPage";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { InvoicesPage } from "@/features/invoices/InvoicesPage";
 import { PlanningPage } from "@/features/reservations/PlanningPage";
 import { ReservationFormPage } from "@/features/reservations/ReservationFormPage";
@@ -12,7 +13,6 @@ import { RoomFormPage } from "@/features/rooms/RoomFormPage";
 import { RoomsPage } from "@/features/rooms/RoomsPage";
 import { RoomTypeFormPage } from "@/features/rooms/RoomTypeFormPage";
 import { RoomTypesPage } from "@/features/rooms/RoomTypesPage";
-import { HomePage } from "./HomePage";
 import { Layout } from "./Layout";
 import { NotFoundPage } from "./NotFoundPage";
 
@@ -26,7 +26,7 @@ export const routes: RouteObject[] = [
       {
         element: <Layout />,
         children: [
-          { index: true, element: <HomePage /> },
+          { index: true, element: <DashboardPage /> },
           { path: "chambres", element: <RoomsPage /> },
           { path: "chambres/types", element: <RoomTypesPage /> },
           { path: "clients", element: <ClientsPage /> },

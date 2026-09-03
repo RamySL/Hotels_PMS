@@ -14,7 +14,7 @@ const receptionist: User = {
   role: "RECEPTIONIST",
 };
 
-// Seule la connexion obtient une réponse : l'appel de l'accueil à l'API reste en attente
+// Seule la connexion obtient une réponse : l'appel du tableau de bord à l'API reste en attente
 beforeEach(() => {
   vi.stubGlobal(
     "fetch",
@@ -64,7 +64,7 @@ describe("routes", () => {
       "/",
     );
     expect(
-      screen.getByRole("heading", { name: "Accueil" }),
+      screen.getByRole("heading", { name: "Aujourd'hui" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Lucas Bernard")).toBeInTheDocument();
     expect(screen.getByText("Réception")).toBeInTheDocument();

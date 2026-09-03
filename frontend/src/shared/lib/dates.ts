@@ -56,6 +56,13 @@ const DAY = new Intl.DateTimeFormat("fr-FR", {
   year: "numeric",
 });
 
+const LONG_DAY = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
 const SHORT_DAY = new Intl.DateTimeFormat("fr-FR", {
   weekday: "short",
   day: "numeric",
@@ -76,6 +83,11 @@ const DAY_AND_TIME = new Intl.DateTimeFormat("fr-FR", {
 /** Jour à afficher : « mer. 7 oct. 2026 ». Une Date (un instant de l'API) donne son jour local. */
 export function formatDate(date: string | Date): string {
   return DAY.format(typeof date === "string" ? parseDate(date) : date);
+}
+
+/** Jour en toutes lettres, pour un titre : « mercredi 7 octobre 2026 ». */
+export function formatLongDate(isoDate: string): string {
+  return LONG_DAY.format(parseDate(isoDate));
 }
 
 /** Jour sans l'année, quand elle se devine : « mer. 7 oct. ». */
